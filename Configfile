@@ -1,0 +1,40 @@
+# A list of all the languages used in this project
+LANGUAGES   += c++
+LANGUAGES   += bash
+LANGUAGES   += pkgconfig
+LANGUAGES   += h
+
+# This is designed to be cross-platform, so I'm trying to be as good
+# as possible about making sure it actually runs everywhere.
+LANGUAGES   += c++
+COMPILEOPTS += -std=c++11
+COMPILEOPTS += -Wall
+COMPILEOPTS += -Wextra
+COMPILEOPTS += -pedantic
+COMPILEOPTS += -Werror
+
+# I'm internally using this one C++ library, so I deal with that by
+# just allowing this as a global include directory.  This makes it a
+# bit easier for others to copy the binaries as example code.
+LANGUAGES   += c++
+COMPILEOPTS += -Isrc
+
+# pkg-config files should have the version included in them.
+LANGUAGES   += pkgconfig
+LINKOPTS    += -Sobj/proc/version-pc.sed
+
+# These scripts produce the version information files.
+GENERATE    += version.h
+GENERATE    += version-pc.sed
+
+# This is the main library, all the binaries here pretty much just
+# call into it.
+LIBRARIES   += libhurricane-bfd.so
+CONFIG      += libhurricane-bfd-sources
+CONFIG      += libhurricane-bfd-headers
+LIBRARIES   += pkgconfig/hurricane-bfd.pc
+SOURCES     += hurricane-bfd/hurricane-bfd.pc
+
+# Prints information about a HEX-formatted object file.
+BINARIES    += hurricane-hexinfo
+SOURCES     += info.c++
