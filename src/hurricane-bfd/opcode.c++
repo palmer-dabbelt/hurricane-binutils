@@ -26,7 +26,7 @@ std::string std::to_string(const hurricane_bfd::opcode& op)
 {
     switch (op) {
     case opcode::NO:
-        return "no";
+        return "nop";
     case opcode::RST:
         return "rst";
     case opcode::LIT:
@@ -78,7 +78,7 @@ std::string std::to_string(const hurricane_bfd::opcode& op)
     case opcode::LDI:
         return "ldi";
     case opcode::STI:
-        return "std";
+        return "sti";
     }
 
     fprintf(stderr, "std::to_string(hurricane_bfd::opcode) overran switch\n");

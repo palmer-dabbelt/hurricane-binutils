@@ -37,6 +37,7 @@ namespace hurricane_bfd {
         /* Some types for the decoded instructions. */
         typedef unsigned int reg_index_t;
         typedef unsigned int immediate_t;
+        typedef unsigned int width_t;
 
     private:
         union inst {
@@ -64,6 +65,28 @@ namespace hurricane_bfd {
                 unsigned int di  : 5;
                 unsigned int op  : 5;
             } lit __attribute__((packed));
+
+            /* The format used for "sti". */
+            struct {
+                unsigned int out : 4;
+                unsigned int in  : 2;
+                unsigned int off : 10;
+                unsigned int en  : 1;
+                unsigned int xi  : 5;
+                unsigned int di  : 5;
+                unsigned int op  : 5;
+            } sti __attribute__((packed));
+
+            /* The format used for "ldi". */
+            struct {
+                unsigned int out : 4;
+                unsigned int in  : 2;
+                unsigned int off : 10;
+                unsigned int en  : 1;
+                unsigned int xi  : 5;
+                unsigned int di  : 5;
+                unsigned int op  : 5;
+            } ldi __attribute__((packed));
         };
         typedef union inst inst_t;
 
@@ -153,6 +176,26 @@ namespace hurricane_bfd {
         bool x_is_network(void) const;
         bool y_is_network(void) const;
         bool z_is_network(void) const;
+
+        /* REturns the width that these operands can take on, aborting
+         * if that's not valid. */
+        width_t d_width(void) const;
+        width_t x_width(void) const;
+        width_t y_width(void) const;
+        width_t z_width(void) const;
+
+        /* Returns TRUE if the operand should be treated as a width,
+         * and FALSE otherwise. */
+        bool d_is_width(void) const;
+        bool x_is_width(void) const;
+        bool y_is_width(void) const;
+        bool z_is_width(void) const;
+
+        /* Special logic for checking for a parallel move
+         * operation. */
+        bool parallel_network(void) const;
+        std::map<enum direction, bool> parallel_net_out(void) const;
+        std::map<enum direction, bool> parallel_net_in(void) const;
 
         /* Returns a string representation of this instruction. */
         std::string to_string(void) const;

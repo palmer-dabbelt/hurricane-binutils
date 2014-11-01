@@ -128,10 +128,16 @@ instruction::reg_index_t instruction::x_index(void) const
 
     case opcode::NO:
     case opcode::RST:
-    case opcode::LIT:
     case opcode::RND:
     case opcode::EAT:
         fprintf(stderr, "Requested X register index in %s, but there's no X\n",
+                std::to_string(op()).c_str()
+            );
+        abort();
+        break;
+
+    case opcode::LIT:
+        fprintf(stderr, "Requested X register index in %s, but there's is always immediate\n",
                 std::to_string(op()).c_str()
             );
         abort();
@@ -273,7 +279,6 @@ bool instruction::d_is_register(void) const
 bool instruction::x_is_register(void) const
 {
     switch (op()) {
-    case opcode::NO:
     case opcode::RST:
     case opcode::LIT:
     case opcode::RND:
@@ -298,10 +303,16 @@ bool instruction::x_is_register(void) const
     case opcode::LOG2:
     case opcode::LD:
     case opcode::ST:
-    case opcode::LDI:
-    case opcode::STI:
         return (x_is_immediate() == false) && (x_index() != 31);
-        break;
+
+    case opcode::NO:
+        return false;
+
+    case opcode::LDI:
+        return false;
+
+    case opcode::STI:
+        return true;
     }
     abort();
 }
@@ -309,9 +320,7 @@ bool instruction::x_is_register(void) const
 bool instruction::y_is_register(void) const
 {
     switch (op()) {
-    case opcode::NO:
     case opcode::RST:
-    case opcode::LIT:
     case opcode::RND:
     case opcode::EAT:
     case opcode::NOT:
@@ -334,10 +343,13 @@ bool instruction::y_is_register(void) const
     case opcode::LOG2:
     case opcode::LD:
     case opcode::ST:
+        return (y_is_immediate() == false) && (y_index() != 31);
+
+    case opcode::NO:
+    case opcode::LIT:
     case opcode::LDI:
     case opcode::STI:
-        return (y_is_immediate() == false) && (y_index() != 31);
-        break;
+        return false;
     }
     abort();
 }
@@ -345,35 +357,37 @@ bool instruction::y_is_register(void) const
 bool instruction::z_is_register(void) const
 {
     switch (op()) {
-    case opcode::NO:
+    case opcode::MUX:
+    case opcode::ST:
+        return (z_is_immediate() == false) && (z_index() != 31);
+
     case opcode::RST:
-    case opcode::LIT:
     case opcode::RND:
     case opcode::EAT:
     case opcode::NOT:
-    case opcode::AND:
     case opcode::OR:
     case opcode::XOR:
     case opcode::EQ:
     case opcode::NEQ:
-    case opcode::MUX:
+    case opcode::NO:
+    case opcode::LIT:
+    case opcode::AND:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
     case opcode::LSH:
     case opcode::RSH:
     case opcode::ARSH:
     case opcode::MSK:
-    case opcode::CAT:
-    case opcode::ADD:
-    case opcode::SUB:
     case opcode::LT:
     case opcode::GTE:
     case opcode::MUL:
     case opcode::LOG2:
     case opcode::LD:
-    case opcode::ST:
     case opcode::LDI:
     case opcode::STI:
-        return (z_is_immediate() == false) && (z_index() != 31);
-        break;
+        return false;
+
     }
     abort();
 }
@@ -420,7 +434,6 @@ instruction::immediate_t instruction::x_imm(void) const
     switch (op()) {
     case opcode::NO:
     case opcode::RST:
-    case opcode::LIT:
     case opcode::RND:
     case opcode::EAT:
     case opcode::NOT:
@@ -443,11 +456,16 @@ instruction::immediate_t instruction::x_imm(void) const
     case opcode::LOG2:
     case opcode::LD:
     case opcode::ST:
-    case opcode::LDI:
     case opcode::STI:
-        fprintf(stderr, "There are no X immediates\n");
+        fprintf(stderr, "Requested X as immediate, but it's a register index\n");
         abort();
         break;
+
+    case opcode::LIT:
+        return _bits.lit.lit;
+
+    case opcode::LDI:
+        return _bits.ldi.off;
     }
     abort();
 }
@@ -480,15 +498,21 @@ instruction::immediate_t instruction::y_imm(void) const
     case opcode::LOG2:
     case opcode::LD:
     case opcode::ST:
-    case opcode::LDI:
-    case opcode::STI:
-        if (_bits.inst.iy == 0)
+        if (_bits.inst.iy == 1)
             return _bits.inst.yi;
 
         fprintf(stderr, "Requested Y immediate, but Y is a register index\n");
         abort();
 
         break;
+
+    case opcode::LDI:
+        fprintf(stderr, "Requested Y immediate, but there are no Y immediates\n");
+        abort();
+        break;
+
+    case opcode::STI:
+        return _bits.sti.off;
     }
     abort();
 }
@@ -496,10 +520,6 @@ instruction::immediate_t instruction::y_imm(void) const
 instruction::immediate_t instruction::z_imm(void) const
 {
     switch (op()) {
-    case opcode::LD:
-        return _bits.inst.zi;
-        break;
-
     case opcode::NO:
     case opcode::RST:
     case opcode::LIT:
@@ -516,19 +536,23 @@ instruction::immediate_t instruction::z_imm(void) const
     case opcode::RSH:
     case opcode::ARSH:
     case opcode::MSK:
-    case opcode::CAT:
     case opcode::ADD:
     case opcode::SUB:
     case opcode::LT:
     case opcode::GTE:
     case opcode::MUL:
     case opcode::LOG2:
+    case opcode::LD:
     case opcode::ST:
     case opcode::LDI:
     case opcode::STI:
-        fprintf(stderr, "There are no Z immediates\n");
+        fprintf(stderr, "Requested Z, but not valid for this format\n");
         abort();
         break;
+
+    case opcode::CAT:
+        return _bits.inst.zi;
+
     }
     abort();
 }
@@ -575,7 +599,6 @@ bool instruction::x_is_immediate(void) const
     switch (op()) {
     case opcode::NO:
     case opcode::RST:
-    case opcode::LIT:
     case opcode::RND:
     case opcode::EAT:
     case opcode::NOT:
@@ -598,10 +621,14 @@ bool instruction::x_is_immediate(void) const
     case opcode::LOG2:
     case opcode::LD:
     case opcode::ST:
-    case opcode::LDI:
     case opcode::STI:
         return false;
-        break;
+
+     case opcode::LIT:
+         return true;
+
+    case opcode::LDI:
+        return true;
     }
     abort();
 }
@@ -611,7 +638,6 @@ bool instruction::y_is_immediate(void) const
     switch (op()) {
     case opcode::NO:
     case opcode::RST:
-    case opcode::LIT:
     case opcode::RND:
     case opcode::EAT:
     case opcode::NOT:
@@ -634,10 +660,16 @@ bool instruction::y_is_immediate(void) const
     case opcode::LOG2:
     case opcode::LD:
     case opcode::ST:
-    case opcode::LDI:
-    case opcode::STI:
         return _bits.inst.iy;
-        break;
+
+    case opcode::LIT:
+        return false;
+
+    case opcode::LDI:
+        return false;
+
+    case opcode::STI:
+        return true;
     }
     abort();
 }
@@ -645,10 +677,6 @@ bool instruction::y_is_immediate(void) const
 bool instruction::z_is_immediate(void) const
 {
     switch (op()) {
-    case opcode::LD:
-        return true;
-        break;
-
     case opcode::NO:
     case opcode::RST:
     case opcode::LIT:
@@ -672,11 +700,13 @@ bool instruction::z_is_immediate(void) const
     case opcode::GTE:
     case opcode::MUL:
     case opcode::LOG2:
+    case opcode::LD:
     case opcode::ST:
+        return false;
+
     case opcode::LDI:
     case opcode::STI:
         return false;
-        break;
     }
     abort();
 }
@@ -715,13 +745,15 @@ std::map<enum direction, bool> instruction::d_net(void) const
     case opcode::ST:
     case opcode::LDI:
     case opcode::STI:
+    {
         /* FIXME: Here is some logic that depends on explicit register
          * indicies, while we should really be dealing with this in a
          * paramaterizable way. */
         for (int i = 0; i < 4; ++i)
             if ((_bits.inst.out & (1 << i)) != 0)
-                out[(enum direction)(_bits.inst.in)] = true;
+                out[(enum direction)i] = true;
         break;
+    }
     }
 
     return out;
@@ -764,11 +796,8 @@ std::map<enum direction, bool> instruction::x_net(void) const
         /* FIXME: Here is some logic that depends on explicit register
          * indicies, while we should really be dealing with this in a
          * paramaterizable way. */
-        if (x_is_network() == true) {
-            for (int i = 0; i < 4; ++i)
-                if ((_bits.inst.out & (1 << i)) != 0)
-                    out[(enum direction)i] = true;
-        }
+        if (x_is_network() == true)
+            out[(enum direction)(_bits.inst.in)] = true;
         break;
     }
 
@@ -807,17 +836,19 @@ std::map<enum direction, bool> instruction::y_net(void) const
     case opcode::LOG2:
     case opcode::LD:
     case opcode::ST:
-    case opcode::LDI:
-    case opcode::STI:
         /* FIXME: Here is some logic that depends on explicit register
          * indicies, while we should really be dealing with this in a
          * paramaterizable way. */
-        if (y_is_network() == true) {
-            for (int i = 0; i < 4; ++i)
-                if ((_bits.inst.out & (1 << i)) != 0)
-                    out[(enum direction)i] = true;
-        }
+        if (y_is_network() == true)
+            out[(enum direction)(_bits.inst.in)] = true;
         break;
+
+    case opcode::LDI:
+    case opcode::STI:
+        fprintf(stderr, "Requested y_net in %s, but that can't touch network\n",
+                std::to_string(op()).c_str()
+            );
+        abort();
     }
 
     return out;
@@ -855,17 +886,19 @@ std::map<enum direction, bool> instruction::z_net(void) const
     case opcode::LOG2:
     case opcode::LD:
     case opcode::ST:
-    case opcode::LDI:
-    case opcode::STI:
         /* FIXME: Here is some logic that depends on explicit register
          * indicies, while we should really be dealing with this in a
          * paramaterizable way. */
-        if (z_is_network() == true) {
-            for (int i = 0; i < 4; ++i)
-                if ((_bits.inst.out & (1 << i)) != 0)
-                    out[(enum direction)i] = true;
-        }
+        if (z_is_network() == true)
+            out[(enum direction)(_bits.inst.in)] = true;
         break;
+
+    case opcode::LDI:
+    case opcode::STI:
+        fprintf(stderr, "Requested z_net in %s, but that can't touch network\n",
+                std::to_string(op()).c_str()
+            );
+        abort();
     }
 
     return out;
@@ -874,7 +907,6 @@ std::map<enum direction, bool> instruction::z_net(void) const
 bool instruction::d_is_network(void) const
 {
     switch (op()) {
-    case opcode::NO:
     case opcode::RST:
     case opcode::LIT:
     case opcode::RND:
@@ -898,11 +930,13 @@ bool instruction::d_is_network(void) const
     case opcode::MUL:
     case opcode::LOG2:
     case opcode::LD:
-    case opcode::ST:
     case opcode::LDI:
-    case opcode::STI:
         return (d_is_immediate() == false) && (d_index() == 31);
-        break;
+
+    case opcode::NO:
+    case opcode::ST:
+    case opcode::STI:
+        return false;
     }
     abort();
 }
@@ -910,7 +944,6 @@ bool instruction::d_is_network(void) const
 bool instruction::x_is_network(void) const
 {
     switch (op()) {
-    case opcode::NO:
     case opcode::RST:
     case opcode::LIT:
     case opcode::RND:
@@ -938,7 +971,9 @@ bool instruction::x_is_network(void) const
     case opcode::LDI:
     case opcode::STI:
         return (x_is_immediate() == false) && (x_index() == 31);
-        break;
+
+    case opcode::NO:
+        return false;
     }
     abort();
 }
@@ -946,9 +981,7 @@ bool instruction::x_is_network(void) const
 bool instruction::y_is_network(void) const
 {
     switch (op()) {
-    case opcode::NO:
     case opcode::RST:
-    case opcode::LIT:
     case opcode::RND:
     case opcode::EAT:
     case opcode::NOT:
@@ -971,10 +1004,13 @@ bool instruction::y_is_network(void) const
     case opcode::LOG2:
     case opcode::LD:
     case opcode::ST:
+        return (y_is_immediate() == false) && (y_index() == 31);
+
+    case opcode::NO:
+    case opcode::LIT:
     case opcode::LDI:
     case opcode::STI:
-        return (y_is_immediate() == false) && (y_index() == 31);
-        break;
+        return false;
     }
     abort();
 }
@@ -982,6 +1018,43 @@ bool instruction::y_is_network(void) const
 bool instruction::z_is_network(void) const
 {
     switch (op()) {
+    case opcode::RST:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::MUX:
+        return (z_is_immediate() == false) && (z_index() == 31);
+
+    case opcode::NO:
+    case opcode::LIT:
+    case opcode::LDI:
+    case opcode::STI:
+    case opcode::CAT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+        return false;
+    }
+    abort();
+}
+
+instruction::width_t instruction::z_width(void) const
+{
+    switch (op()) {
     case opcode::NO:
     case opcode::RST:
     case opcode::LIT:
@@ -994,168 +1067,195 @@ bool instruction::z_is_network(void) const
     case opcode::EQ:
     case opcode::NEQ:
     case opcode::MUX:
-    case opcode::LSH:
-    case opcode::RSH:
-    case opcode::ARSH:
     case opcode::MSK:
-    case opcode::CAT:
     case opcode::ADD:
     case opcode::SUB:
     case opcode::LT:
     case opcode::GTE:
-    case opcode::MUL:
     case opcode::LOG2:
     case opcode::LD:
     case opcode::ST:
     case opcode::LDI:
     case opcode::STI:
-        return (z_is_immediate() == false) && (z_index() == 31);
+        fprintf(stderr, "Requested Z as width, but not valid for this format\n");
+        abort();
         break;
+
+    case opcode::MUL:
+    case opcode::CAT:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+        return _bits.inst.zi;
+
     }
     abort();
+}
+
+bool instruction::z_is_width(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::MSK:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return false;
+
+    case opcode::CAT:
+        return true;
+
+    case opcode::MUL:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+        return z_width() != 0;
+    }
+    abort();
+}
+
+bool instruction::parallel_network(void) const
+{
+    if (d_is_network())
+        return false;
+
+    for (const auto& dir: parallel_net_out())
+        if (dir.second == true)
+            return true;
+
+    return false;
+}
+
+std::map<enum direction, bool> instruction::parallel_net_out(void) const
+{
+    std::map<enum direction, bool> out;
+    for (const auto& direction: all_directions)
+        out[direction] = false;
+
+    for (int i = 0; i < 4; ++i)
+        if ((_bits.inst.out & (1 << i)) != 0)
+            out[(enum direction)i] = true;
+
+    return out;
+}
+
+std::map<enum direction, bool> instruction::parallel_net_in(void) const
+{
+    std::map<enum direction, bool> out;
+    for (const auto& direction: all_directions)
+        out[direction] = false;
+
+    out[(enum direction)(_bits.inst.in)] = true;
+
+    return out;
 }
 
 std::string instruction::to_string(void) const
 {
     std::stringstream ss;
 
-    auto netoutname = [&](void)
-        {
-            auto W = _bits.inst.out & 0x1 ? "W" : "";
-            auto N = _bits.inst.out & 0x2 ? "N" : "";
-            auto E = _bits.inst.out & 0x4 ? "E" : "";
-            auto S = _bits.inst.out & 0x8 ? "S" : "";
-            std::stringstream ss;
-            ss << W << N << E << S;
-            return ss.str();
-        };
+    /* If the destination is a register then output that register
+     * to the string, formatted correctly. */
+    if (d_is_register())
+        ss << "x" << std::to_string(d_index()) << " = ";
+    if (d_is_network())
+        ss << std::to_string(d_net()) << " = ";
 
-    auto netinname = [&](void)
-        {
-            switch (_bits.inst.in) {
-            case 0: return "W";
-            case 1: return "N";
-            case 2: return "E";
-            case 3: return "S";
-            }
-            abort();
-        };
+    /* The opcode gets written directly out. */
+    ss << std::to_string(op());
+    if (z_is_width())
+        ss << "'" << z_width();
 
-    auto netdest = [&](void) -> std::string
-        {
-            if (_bits.inst.di == 31)
-                return netoutname();
+    /* Check every opcode and output whatever exist. */
+    if (x_is_immediate())
+        ss << " " << std::to_string(x_imm());
+    if (x_is_register())
+        ss << " " << "x" << std::to_string(x_index());
+    if (x_is_network())
+        ss << " " << std::to_string(x_net());
 
-            std::stringstream ss;
-            ss << "x" << _bits.inst.di;
-            return ss.str();
-        };
+    if (y_is_immediate())
+        ss << " " << std::to_string(y_imm());
+    if (y_is_register())
+        ss << " " << "x" << std::to_string(y_index());
+    if (y_is_network())
+        ss << " " << std::to_string(y_net());
 
-    auto netsrc = [&](int reg) -> std::string
-        {
-            if (reg == 31)
-                return netinname();
+    if (z_is_immediate())
+        ss << " " << std::to_string(z_imm());
+    if (z_is_register())
+        ss << " " << "x" << std::to_string(z_index());
+    if (z_is_network())
+        ss << " " << std::to_string(z_net());
 
-            std::stringstream ss;
-            ss << "x" << reg;
-            return ss.str();
-        };
+    ss << " ";
 
-    auto netd = [&](void) { return netsrc(_bits.inst.di); };
-    auto netx = [&](void) { return netsrc(_bits.inst.xi); };
-    auto nety = [&](void) { 
-        if (_bits.inst.iy == 0)
-            return netsrc(_bits.inst.yi);
-        else
-            return std::to_string(_bits.inst.yi);
-    };
-    auto netz = [&](void) { return netsrc(_bits.inst.zi); };
-
-    auto widthapos = [&](int width) -> std::string
-        {
-            if (width == 0)
-                return "";
-
-            std::stringstream ss;
-            ss << "'" << width;
-            return ss.str();
-        };
-
-    auto zw = [&](void) { return widthapos(_bits.inst.zi); };
-
-    auto y_is_const_zero = [&](void)
-        { return _bits.inst.iy == 1 && _bits.inst.yi == 0; };
-
-    switch (op()) {
-    case opcode::NO:
-        ss << "nop";
-        break;
-
-    case opcode::LIT:
-        ss << netdest() << " = lit " << _bits.lit.lit;
-        break;
-
-    case opcode::EQ:
-        ss << netdest() << " = eq " << netx() << " " << nety();
-        break;
-
-    case opcode::MUX:
-        ss << netdest() << " = mux " << netx() << " " << nety() << " " << netz();
-        break;
-
-    case opcode::RSH:
-        ss << netdest() << " = rsh" << zw() << " " << netx() << " " << nety();
-        break;
-
-    case opcode::CAT:
-        ss << netdest() << " = cat" << zw() << " " << netx() << " " << nety();
-        break;
-
-    case opcode::ADD:
-        if (y_is_const_zero() == true)
-            ss << netdest() << " = " << netx();
-        else
-            ss << netdest() << " = add " << netx() << " " << nety();
-        break;
-
-    case opcode::SUB:
-        ss << netdest() << " = sub " << netx() << " " << nety();
-        break;
-
-    case opcode::MUL:
-        ss << netdest() << " = mul" << zw() << " " << netx() << " " << nety();
-        break;
-
-    case opcode::LD:
-        ss << netdest() << " = ld " << netx() << " " << nety();
-        break;
-
-    case opcode::ST:
-        ss << "st " << netd() << " " << nety() << " " << netz();
-        break;
-
-    case opcode::LDI:
-        ss << netdest() << " = ldi " << _bits.inst.xi;
-        break;
-
-    case opcode::STI:
-        ss << "sti " << netx() << " " << _bits.inst.yi;
-        break;
-
-    default:
-        fprintf(stderr, "Unhandled opcode: %s\n",
-                std::to_string(op()).c_str()
-            );
-        abort();
-        break;
+    /* Check to see if there was a parallel network operation going
+     * on. */
+    if (parallel_network() == true) {
+        ss << "; ";
+        ss << std::to_string(parallel_net_out());
+        ss << " <- ";
+        ss << std::to_string(parallel_net_in());
     }
 
-    if ((_bits.inst.di != 31) && (_bits.inst.out != 0))
-        ss << " ; " << netoutname() << " <- " << netinname();
-    else
+    /* This is a special format for NOPs, it's needed to match what
+     * Jonathan is doing in his disassambler. */
+    if ((op() == opcode::ADD) && y_is_immediate() && (y_imm() == 0)) {
+        std::stringstream ss;
+
+        if (d_is_network())
+            ss << std::to_string(d_net());
+        else if (d_is_immediate())
+            ss << std::to_string(d_imm());
+        else if (d_is_register())
+            ss << "x" << std::to_string(d_index());
+        else {
+            fprintf(stderr, "D is not net, imm, or reg\n");
+            goto print_and_abort;
+        }
+
+        ss << " = ";
+
+        if (x_is_network())
+            ss << std::to_string(x_net());
+        else if (x_is_immediate())
+            ss << std::to_string(x_imm());
+        else if (x_is_register())
+            ss << "x" << std::to_string(x_index());
+        else {
+            fprintf(stderr, "X is not net, imm, or reg\n");
+            goto print_and_abort;
+        }
+
         ss << " ";
 
+        return ss.str();
+    }
+
     return ss.str();
+
+print_and_abort:
+    fprintf(stderr, "  Other decode: '%s'\n", ss.str().c_str());
+    fprintf(stderr, "  HEX: 0x%X\n", _bits.bits);
+    abort();
 }
 
 instruction::ptr instruction::parse_hex(const std::string hex)
