@@ -681,6 +681,52 @@ bool instruction::z_is_immediate(void) const
     abort();
 }
 
+std::map<enum direction, bool> instruction::d_net(void) const
+{
+    std::map<enum direction, bool> out;
+    for (const auto& direction: all_directions)
+        out[direction] = false;
+
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        /* FIXME: Here is some logic that depends on explicit register
+         * indicies, while we should really be dealing with this in a
+         * paramaterizable way. */
+        for (int i = 0; i < 4; ++i)
+            if ((_bits.inst.out & (1 << i)) != 0)
+                out[(enum direction)(_bits.inst.in)] = true;
+        break;
+    }
+
+    return out;
+}
+
 std::map<enum direction, bool> instruction::x_net(void) const
 {
     std::map<enum direction, bool> out;
@@ -967,52 +1013,6 @@ bool instruction::z_is_network(void) const
         break;
     }
     abort();
-}
-
-std::map<enum direction, bool> instruction::d_net(void) const
-{
-    std::map<enum direction, bool> out;
-    for (const auto& direction: all_directions)
-        out[direction] = false;
-
-    switch (op()) {
-    case opcode::NO:
-    case opcode::RST:
-    case opcode::LIT:
-    case opcode::RND:
-    case opcode::EAT:
-    case opcode::NOT:
-    case opcode::AND:
-    case opcode::OR:
-    case opcode::XOR:
-    case opcode::EQ:
-    case opcode::NEQ:
-    case opcode::MUX:
-    case opcode::LSH:
-    case opcode::RSH:
-    case opcode::ARSH:
-    case opcode::MSK:
-    case opcode::CAT:
-    case opcode::ADD:
-    case opcode::SUB:
-    case opcode::LT:
-    case opcode::GTE:
-    case opcode::MUL:
-    case opcode::LOG2:
-    case opcode::LD:
-    case opcode::ST:
-    case opcode::LDI:
-    case opcode::STI:
-        /* FIXME: Here is some logic that depends on explicit register
-         * indicies, while we should really be dealing with this in a
-         * paramaterizable way. */
-        for (int i = 0; i < 4; ++i)
-            if ((_bits.inst.out & (1 << i)) != 0)
-                out[(enum direction)(_bits.inst.in)] = true;
-        break;
-    }
-
-    return out;
 }
 
 std::string instruction::to_string(void) const
