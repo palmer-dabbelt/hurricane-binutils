@@ -26,6 +26,7 @@
 #include <map>
 #include <memory>
 #include <cstdint>
+#include <cstdlib>
 
 namespace hurricane_bfd {
     /* Stores a single instruction. */

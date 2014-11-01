@@ -19,6 +19,7 @@
  */
 
 #include "opcode.h++"
+#include <cstdlib>
 using namespace hurricane_bfd;
 
 std::string std::to_string(const hurricane_bfd::opcode& op)
