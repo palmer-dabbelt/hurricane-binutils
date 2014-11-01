@@ -39,3 +39,8 @@ SOURCES     += hurricane-bfd/hurricane-bfd.pc
 BINARIES    += hurricane-hexinfo
 SOURCES     += info.c++
 TESTSRC     += 1tile1zero.bash
+
+# Dumps the assembly for a binary
+BINARIES    += hurricane-objdump
+SOURCES     += objdump.c++
+TESTSRC     += histogram.bash
