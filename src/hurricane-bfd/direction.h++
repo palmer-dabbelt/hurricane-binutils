@@ -21,6 +21,8 @@
 #ifndef LIBHURRICANE_ELF__DIRECTION_HXX
 #define LIBHURRICANE_ELF__DIRECTION_HXX
 
+#include <map>
+#include <string>
 #include <vector>
 
 namespace hurricane_bfd {
@@ -43,6 +45,12 @@ namespace hurricane_bfd {
         direction::E,
         direction::S
     };
+}
+
+namespace std {
+    string to_string(const enum hurricane_bfd::direction& dir);
+    string to_string(const std::vector<enum hurricane_bfd::direction>& dir);
+    string to_string(const std::map<enum hurricane_bfd::direction, bool>& dir);
 }
 
 #endif
