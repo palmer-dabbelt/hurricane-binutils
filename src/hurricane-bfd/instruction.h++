@@ -141,10 +141,10 @@ namespace hurricane_bfd {
         /* Returns a map that contains the network half of this
          * operation.  Every network direction is in this map, TRUE
          * means they're active and FALSE means they're not. */
-        std::map<enum direction, bool> net_d(void) const;
-        std::map<enum direction, bool> net_x(void) const;
-        std::map<enum direction, bool> net_y(void) const;
-        std::map<enum direction, bool> net_z(void) const;
+        std::map<enum direction, bool> d_net(void) const;
+        std::map<enum direction, bool> x_net(void) const;
+        std::map<enum direction, bool> y_net(void) const;
+        std::map<enum direction, bool> z_net(void) const;
 
         /* Returns TRUE if the X source is a network operation, as
          * opposed to a local operation (which can be either an

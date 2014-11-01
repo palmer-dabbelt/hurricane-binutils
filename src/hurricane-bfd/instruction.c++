@@ -681,7 +681,7 @@ bool instruction::z_is_immediate(void) const
     abort();
 }
 
-std::map<enum direction, bool> instruction::net_x(void) const
+std::map<enum direction, bool> instruction::x_net(void) const
 {
     std::map<enum direction, bool> out;
     for (const auto& direction: all_directions)
@@ -729,7 +729,7 @@ std::map<enum direction, bool> instruction::net_x(void) const
     return out;
 }
 
-std::map<enum direction, bool> instruction::net_y(void) const
+std::map<enum direction, bool> instruction::y_net(void) const
 {
     std::map<enum direction, bool> out;
     for (const auto& direction: all_directions)
@@ -777,7 +777,7 @@ std::map<enum direction, bool> instruction::net_y(void) const
     return out;
 }
 
-std::map<enum direction, bool> instruction::net_z(void) const
+std::map<enum direction, bool> instruction::z_net(void) const
 {
     std::map<enum direction, bool> out;
     for (const auto& direction: all_directions)
@@ -969,7 +969,7 @@ bool instruction::z_is_network(void) const
     abort();
 }
 
-std::map<enum direction, bool> instruction::net_d(void) const
+std::map<enum direction, bool> instruction::d_net(void) const
 {
     std::map<enum direction, bool> out;
     for (const auto& direction: all_directions)
