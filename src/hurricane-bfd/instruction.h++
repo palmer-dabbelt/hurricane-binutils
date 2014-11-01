@@ -21,6 +21,9 @@
 #ifndef LIBHURRICANE_ELF__INSTRUCTION_HXX
 #define LIBHURRICANE_ELF__INSTRUCTION_HXX
 
+#include "direction.h++"
+#include "opcode.h++"
+#include <map>
 #include <memory>
 #include <cstdint>
 
@@ -29,6 +32,10 @@ namespace hurricane_bfd {
     class instruction {
     public:
         typedef std::shared_ptr<instruction> ptr;
+
+        /* Some types for the decoded instructions. */
+        typedef unsigned int reg_index_t;
+        typedef unsigned int immediate_t;
 
     private:
         union inst {
@@ -89,6 +96,54 @@ namespace hurricane_bfd {
                 abort();
             return _debug;
         }
+
+    public:
+        /* Returns this instruction's opcode.  This can't abort, as
+         * every instruction has an opcode. */
+        enum opcode op(void) const;
+
+        /* Guarded mechanisms for decoding instructions.  Note that
+         * you should only call these when the correct opcode exists,
+         * otherwise they will abort! */
+
+        /* Returns the register index associated with these register
+         * identifiers. */
+        reg_index_t d_index(void) const;
+        reg_index_t x_index(void) const;
+        reg_index_t y_index(void) const;
+        reg_index_t z_index(void) const;
+
+        /* Returns the immediate associated with these spots in the
+         * instruction format.  You should be sure to check that these
+         * immediates are immediates first before trying to use them,
+         * as they'll abort! */
+        immediate_t d_imm(void) const;
+        immediate_t x_imm(void) const;
+        immediate_t y_imm(void) const;
+        immediate_t z_imm(void) const;
+
+        /* Returns TRUE if these decode slots are an immediate, and
+         * FALSE if they're not. */
+        bool d_is_immediate(void) const;
+        bool x_is_immediate(void) const;
+        bool y_is_immediate(void) const;
+        bool z_is_immediate(void) const;
+
+        /* Returns a map that contains the network half of this
+         * operation.  Every network direction is in this map, TRUE
+         * means they're active and FALSE means they're not. */
+        std::map<enum direction, bool> net_d(void) const;
+        std::map<enum direction, bool> net_x(void) const;
+        std::map<enum direction, bool> net_y(void) const;
+        std::map<enum direction, bool> net_z(void) const;
+
+        /* Returns TRUE if the X source is a network operation, as
+         * opposed to a local operation (which can be either an
+         * immediate or a register index). */
+        bool d_is_network(void) const;
+        bool x_is_network(void) const;
+        bool y_is_network(void) const;
+        bool z_is_network(void) const;
 
         /* Returns a string representation of this instruction. */
         std::string to_string(void) const;

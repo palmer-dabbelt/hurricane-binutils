@@ -49,6 +49,828 @@ bool instruction::sanity_check(void) const
     return true;
 }
 
+enum opcode instruction::op(void) const
+{
+    /* FIXME: While these opcodes currently have a direct mapping to
+     * the DREAMER opcodes, this isn't actually correct -- we need a
+     * little layer in between to make this code can all be
+     * paramaterized correctly. */
+    return (enum opcode)(_bits.inst.op);
+}
+
+instruction::reg_index_t instruction::d_index(void) const
+{
+    switch (op()) {
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::LDI:
+        return _bits.inst.di;
+
+    case opcode::NO:
+    case opcode::EAT:
+    case opcode::ST:
+    case opcode::STI:
+        fprintf(stderr, "Requested D register index in %s, but there's no D\n",
+                std::to_string(op()).c_str()
+            );
+        abort();
+        break;
+    }
+    abort();
+}
+
+instruction::reg_index_t instruction::x_index(void) const
+{
+    switch (op()) {
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return _bits.inst.xi;
+
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+        fprintf(stderr, "Requested X register index in %s, but there's no X\n",
+                std::to_string(op()).c_str()
+            );
+        abort();
+        break;
+    }
+    abort();
+}
+
+instruction::reg_index_t instruction::y_index(void) const
+{
+    switch (op()) {
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        if (_bits.inst.iy == 0)
+            return _bits.inst.yi;
+
+        fprintf(stderr, "Requested Y register index, but Y is immediate\n");
+        abort();
+        break;
+
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+        fprintf(stderr, "Requested Y register index in %s, but there's no Y\n",
+                std::to_string(op()).c_str()
+            );
+        abort();
+        break;
+    }
+    abort();
+}
+
+instruction::reg_index_t instruction::z_index(void) const
+{
+    switch (op()) {
+    case opcode::MUX:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return _bits.inst.zi;
+
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+        fprintf(stderr, "Requested Z register index in %s, but there's no Z\n",
+                std::to_string(op()).c_str()
+            );
+        abort();
+        break;
+
+    case opcode::LD:
+        fprintf(stderr, "Requested Z register index in %s, but it's an implicit immediate\n",
+                std::to_string(op()).c_str()
+            );
+        abort();
+        break;
+    }
+    abort();
+}
+
+
+instruction::immediate_t instruction::d_imm(void) const
+{
+    switch (opcode()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        fprintf(stderr, "There are no D immediates\n");
+        abort();
+        break;
+    }
+    abort();
+}
+
+instruction::immediate_t instruction::x_imm(void) const
+{
+    switch (opcode()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        fprintf(stderr, "There are no X immediates\n");
+        abort();
+        break;
+    }
+    abort();
+}
+
+instruction::immediate_t instruction::y_imm(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        if (_bits.inst.iy == 0)
+            return _bits.inst.yi;
+
+        fprintf(stderr, "Requested Y immediate, but Y is a register index\n");
+        abort();
+
+        break;
+    }
+    abort();
+}
+
+instruction::immediate_t instruction::z_imm(void) const
+{
+    switch (op()) {
+    case opcode::LD:
+        return _bits.inst.zi;
+        break;
+
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        fprintf(stderr, "There are no Z immediates\n");
+        abort();
+        break;
+    }
+    abort();
+}
+
+
+bool instruction::d_is_immediate(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return false;
+        break;
+    }
+    abort();
+}
+
+bool instruction::x_is_immediate(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return false;
+        break;
+    }
+    abort();
+}
+
+bool instruction::y_is_immediate(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return _bits.inst.iy;
+        break;
+    }
+    abort();
+}
+
+bool instruction::z_is_immediate(void) const
+{
+    switch (op()) {
+    case opcode::LD:
+        return true;
+        break;
+
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return false;
+        break;
+    }
+    abort();
+}
+
+std::map<enum direction, bool> instruction::net_x(void) const
+{
+    std::map<enum direction, bool> out;
+    for (const auto& direction: all_directions)
+        out[direction] = false;
+
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        /* FIXME: Here is some logic that depends on explicit register
+         * indicies, while we should really be dealing with this in a
+         * paramaterizable way. */
+        if (x_is_network() == true) {
+            for (int i = 0; i < 4; ++i)
+                if ((_bits.inst.out & (1 << i)) != 0)
+                    out[(enum direction)i] = true;
+        }
+        break;
+    }
+
+    return out;
+}
+
+std::map<enum direction, bool> instruction::net_y(void) const
+{
+    std::map<enum direction, bool> out;
+    for (const auto& direction: all_directions)
+        out[direction] = false;
+
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        /* FIXME: Here is some logic that depends on explicit register
+         * indicies, while we should really be dealing with this in a
+         * paramaterizable way. */
+        if (y_is_network() == true) {
+            for (int i = 0; i < 4; ++i)
+                if ((_bits.inst.out & (1 << i)) != 0)
+                    out[(enum direction)i] = true;
+        }
+        break;
+    }
+
+    return out;
+}
+
+std::map<enum direction, bool> instruction::net_z(void) const
+{
+    std::map<enum direction, bool> out;
+    for (const auto& direction: all_directions)
+        out[direction] = false;
+
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        /* FIXME: Here is some logic that depends on explicit register
+         * indicies, while we should really be dealing with this in a
+         * paramaterizable way. */
+        if (z_is_network() == true) {
+            for (int i = 0; i < 4; ++i)
+                if ((_bits.inst.out & (1 << i)) != 0)
+                    out[(enum direction)i] = true;
+        }
+        break;
+    }
+
+    return out;
+}
+
+bool instruction::d_is_network(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return (d_is_immediate() == false) && (d_index() == 31);
+        break;
+    }
+    abort();
+}
+
+bool instruction::x_is_network(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return (x_is_immediate() == false) && (x_index() == 31);
+        break;
+    }
+    abort();
+}
+
+bool instruction::y_is_network(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return (y_is_immediate() == false) && (y_index() == 31);
+        break;
+    }
+    abort();
+}
+
+bool instruction::z_is_network(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return (z_is_immediate() == false) && (z_index() == 31);
+        break;
+    }
+    abort();
+}
+
+std::map<enum direction, bool> instruction::net_d(void) const
+{
+    std::map<enum direction, bool> out;
+    for (const auto& direction: all_directions)
+        out[direction] = false;
+
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        /* FIXME: Here is some logic that depends on explicit register
+         * indicies, while we should really be dealing with this in a
+         * paramaterizable way. */
+        for (int i = 0; i < 4; ++i)
+            if ((_bits.inst.out & (1 << i)) != 0)
+                out[(enum direction)(_bits.inst.in)] = true;
+        break;
+    }
+
+    return out;
+}
+
 std::string instruction::to_string(void) const
 {
     std::stringstream ss;
