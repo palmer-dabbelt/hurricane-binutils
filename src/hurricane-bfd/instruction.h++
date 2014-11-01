@@ -114,6 +114,14 @@ namespace hurricane_bfd {
         reg_index_t y_index(void) const;
         reg_index_t z_index(void) const;
 
+        /* Returns TRUE if the X source is a network operation, as
+         * opposed to a local operation (which can be either an
+         * immediate or a register index). */
+        bool d_is_register(void) const;
+        bool x_is_register(void) const;
+        bool y_is_register(void) const;
+        bool z_is_register(void) const;
+
         /* Returns the immediate associated with these spots in the
          * instruction format.  You should be sure to check that these
          * immediates are immediates first before trying to use them,

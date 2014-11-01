@@ -233,6 +233,150 @@ instruction::reg_index_t instruction::z_index(void) const
     abort();
 }
 
+bool instruction::d_is_register(void) const
+{
+    switch (op()) {
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::LDI:
+        return (d_is_immediate() == false) && (d_index() != 31);
+
+    case opcode::NO:
+    case opcode::ST:
+    case opcode::STI:
+        return false;
+    }
+    abort();
+}
+
+bool instruction::x_is_register(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return (x_is_immediate() == false) && (x_index() != 31);
+        break;
+    }
+    abort();
+}
+
+bool instruction::y_is_register(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return (y_is_immediate() == false) && (y_index() != 31);
+        break;
+    }
+    abort();
+}
+
+bool instruction::z_is_register(void) const
+{
+    switch (op()) {
+    case opcode::NO:
+    case opcode::RST:
+    case opcode::LIT:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::AND:
+    case opcode::OR:
+    case opcode::XOR:
+    case opcode::EQ:
+    case opcode::NEQ:
+    case opcode::MUX:
+    case opcode::LSH:
+    case opcode::RSH:
+    case opcode::ARSH:
+    case opcode::MSK:
+    case opcode::CAT:
+    case opcode::ADD:
+    case opcode::SUB:
+    case opcode::LT:
+    case opcode::GTE:
+    case opcode::MUL:
+    case opcode::LOG2:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::LDI:
+    case opcode::STI:
+        return (z_is_immediate() == false) && (z_index() != 31);
+        break;
+    }
+    abort();
+}
 
 instruction::immediate_t instruction::d_imm(void) const
 {
