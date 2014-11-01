@@ -942,64 +942,66 @@ std::string instruction::to_string(void) const
     auto y_is_const_zero = [&](void)
         { return _bits.inst.iy == 1 && _bits.inst.yi == 0; };
 
-    switch (_bits.inst.op) {
-    case 0:
+    switch (op()) {
+    case opcode::NO:
         ss << "nop";
         break;
 
-    case 2:
+    case opcode::LIT:
         ss << netdest() << " = lit " << _bits.lit.lit;
         break;
 
-    case 10:
+    case opcode::EQ:
         ss << netdest() << " = eq " << netx() << " " << nety();
         break;
 
-    case 12:
+    case opcode::MUX:
         ss << netdest() << " = mux " << netx() << " " << nety() << " " << netz();
         break;
 
-    case 14:
+    case opcode::RSH:
         ss << netdest() << " = rsh" << zw() << " " << netx() << " " << nety();
         break;
 
-    case 17:
+    case opcode::CAT:
         ss << netdest() << " = cat" << zw() << " " << netx() << " " << nety();
         break;
 
-    case 18:
+    case opcode::ADD:
         if (y_is_const_zero() == true)
             ss << netdest() << " = " << netx();
         else
             ss << netdest() << " = add " << netx() << " " << nety();
         break;
 
-    case 19:
+    case opcode::SUB:
         ss << netdest() << " = sub " << netx() << " " << nety();
         break;
 
-    case 22:
+    case opcode::MUL:
         ss << netdest() << " = mul" << zw() << " " << netx() << " " << nety();
         break;
 
-    case 24:
+    case opcode::LD:
         ss << netdest() << " = ld " << netx() << " " << nety();
         break;
 
-    case 25:
+    case opcode::ST:
         ss << "st " << netd() << " " << nety() << " " << netz();
         break;
 
-    case 26:
+    case opcode::LDI:
         ss << netdest() << " = ldi " << _bits.inst.xi;
         break;
 
-    case 27:
+    case opcode::STI:
         ss << "sti " << netx() << " " << _bits.inst.yi;
         break;
 
     default:
-        fprintf(stderr, "Unknown opcode: '%d'\n", _bits.inst.op);
+        fprintf(stderr, "Unhandled opcode: %s\n",
+                std::to_string(op()).c_str()
+            );
         abort();
         break;
     }
