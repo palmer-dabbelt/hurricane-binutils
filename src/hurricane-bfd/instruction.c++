@@ -380,7 +380,7 @@ bool instruction::z_is_register(void) const
 
 instruction::immediate_t instruction::d_imm(void) const
 {
-    switch (opcode()) {
+    switch (op()) {
     case opcode::NO:
     case opcode::RST:
     case opcode::LIT:
@@ -417,7 +417,7 @@ instruction::immediate_t instruction::d_imm(void) const
 
 instruction::immediate_t instruction::x_imm(void) const
 {
-    switch (opcode()) {
+    switch (op()) {
     case opcode::NO:
     case opcode::RST:
     case opcode::LIT:
