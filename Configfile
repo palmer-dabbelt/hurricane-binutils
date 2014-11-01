@@ -38,3 +38,4 @@ SOURCES     += hurricane-bfd/hurricane-bfd.pc
 # Prints information about a HEX-formatted object file.
 BINARIES    += hurricane-hexinfo
 SOURCES     += info.c++
+TESTSRC     += 1tile1zero.bash

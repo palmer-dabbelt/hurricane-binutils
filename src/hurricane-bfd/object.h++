@@ -21,18 +21,50 @@
 #ifndef LIBHURRICANE_ELF__OBJECT_HXX
 #define LIBHURRICANE_ELF__OBJECT_HXX
 
+#include "tile.h++"
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace hurricane_bfd {
+    /* Represents the contents of a single object file, along with
+     * mechanisms to serialize and deserialize these files into
+     * different file formats. */
     class object {
     public:
         typedef std::shared_ptr<object> ptr;
 
-    public:
+    private:
+        std::vector<tile::ptr> _tiles;
 
     public:
+        /* Creates an empty object file.  This is useful if you're
+         * going to do something like writing an assembler. */
+        object(void);
+
+        /* Creates a new in-memory object representation, given
+         * every tile in the system that has code. */
+        object(const std::vector<tile::ptr>& tiles);
+
+    public:
+        const std::vector<tile::ptr>& tiles(void) const { return _tiles; }
+
+    public:
+        /* Writes this object out to a HEX file. */
+        void write_hex_file(const std::string& filename);
+        void write_hex_file(FILE *file);
+
+    public:
+        /* Attempts to determine the type of this file by parsing it
+         * as every file type.  This is probably the parser you should
+         * be using, unless for some reason you're trying to parse
+         * only a particular file format. */
+        static ptr read_file(const std::string& filename);
+
+        /* Creates a new object by reading a HEX file that
+         * represents a single program. */
         static ptr read_hex_file(const std::string& filename);
+        static ptr read_hex_file(FILE *file);
     };
 }
 
