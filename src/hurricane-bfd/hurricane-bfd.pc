@@ -6,6 +6,6 @@ includedir=${prefix}/@@pconfigure_hdrdir@@
 Name: hurricane-bfd
 Description: Like bfd, but for special Hurricane formats
 Version: @@pconfigure_version@@
-Libs: -Wl,-rpath,${libdir} -L${libdir} -lflo
+Libs: -Wl,-rpath,${libdir} -L${libdir} -lhurricane-bfd
 Cflags: -I${includedir} 
 URL: http://github.com/palmer-dabbelt/hurricane-binutils/
