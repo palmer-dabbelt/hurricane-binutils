@@ -45,7 +45,7 @@ lo(const std::vector<instruction::ptr>& instructions,
 {
     std::vector<instruction::ptr> out(count);
 
-    if (count >= instructions.size()) {
+    if (count > instructions.size()) {
         fprintf(stderr, "lo_count greater than instruction count: %llu %llu\n",
                 (long long unsigned)count,
                 (long long unsigned)instructions.size()
