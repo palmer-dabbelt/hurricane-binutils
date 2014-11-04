@@ -118,6 +118,6 @@ int main(int argc, const char **argv)
 
 void print_help_text(FILE *out)
 {
-    fprintf(out, "dreamer-objdump <PROGRAM.hex>: Disassembles PROGRAM\n");
+    fprintf(out, "hurricane-objdump <PROGRAM.hex>: Disassembles PROGRAM\n");
     fprintf(out, "  --help: Prints this help text and exits\n");
 }
