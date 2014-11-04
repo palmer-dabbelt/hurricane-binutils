@@ -102,14 +102,14 @@ int main(int argc, const char **argv)
 
             printf("global _lo_%s\n", mangled_name);
             printf("_lo_%s:\n", mangled_name);
-            for (const auto& i: tile->lo())
-                printf("\t%s\n", i->as_string().c_str());
+            for (const auto& b: tile->lo())
+                printf("\t%s\n", b->as_string().c_str());
             printf("\n");
 
             printf("global _hi_%s\n", mangled_name);
             printf("_hi_%s:\n", mangled_name);
-            for (const auto& i: tile->hi())
-                printf("\t%s\n", i->as_string().c_str());
+            for (const auto& b: tile->hi())
+                printf("\t%s\n", b->as_string().c_str());
             printf("\n");
 
             printf("section .data__tile_%s\n\n", mangled_name);
