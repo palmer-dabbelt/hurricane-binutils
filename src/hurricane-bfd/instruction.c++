@@ -27,13 +27,9 @@
 #include <sstream>
 using namespace hurricane_bfd;
 
-// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-static inline std::string rtrim(const std::string &s_in);
-
 instruction::instruction(const inst_t& bits)
     : _bits(bits),
-      _has_debug(false),
-      _debug("")
+      _has_debug(false)
 {
 }
 
@@ -1052,6 +1048,24 @@ bool instruction::z_is_network(void) const
     abort();
 }
 
+instruction::width_t instruction::d_width(void) const
+{
+    fprintf(stderr, "d cannot be width\n");
+    abort();
+}
+
+instruction::width_t instruction::x_width(void) const
+{
+    fprintf(stderr, "x cannot be width\n");
+    abort();
+}
+
+instruction::width_t instruction::y_width(void) const
+{
+    fprintf(stderr, "y cannot be width\n");
+    abort();
+}
+
 instruction::width_t instruction::z_width(void) const
 {
     switch (op()) {
@@ -1090,6 +1104,21 @@ instruction::width_t instruction::z_width(void) const
 
     }
     abort();
+}
+
+bool instruction::d_is_width(void) const
+{
+    return false;
+}
+
+bool instruction::x_is_width(void) const
+{
+    return false;
+}
+
+bool instruction::y_is_width(void) const
+{
+    return false;
 }
 
 bool instruction::z_is_width(void) const
@@ -1165,130 +1194,4 @@ std::map<enum direction, bool> instruction::parallel_net_in(void) const
     out[(enum direction)(_bits.inst.in)] = true;
 
     return out;
-}
-
-std::string instruction::to_string(void) const
-{
-    std::stringstream ss;
-
-    /* If the destination is a register then output that register
-     * to the string, formatted correctly. */
-    if (d_is_register())
-        ss << "x" << std::to_string(d_index()) << " = ";
-    if (d_is_network())
-        ss << std::to_string(d_net()) << " = ";
-
-    /* The opcode gets written directly out. */
-    ss << std::to_string(op());
-    if (z_is_width())
-        ss << "'" << z_width();
-
-    /* Check every opcode and output whatever exist. */
-    if (x_is_immediate())
-        ss << " " << std::to_string(x_imm());
-    if (x_is_register())
-        ss << " " << "x" << std::to_string(x_index());
-    if (x_is_network())
-        ss << " " << std::to_string(x_net());
-
-    if (y_is_immediate())
-        ss << " " << std::to_string(y_imm());
-    if (y_is_register())
-        ss << " " << "x" << std::to_string(y_index());
-    if (y_is_network())
-        ss << " " << std::to_string(y_net());
-
-    if (z_is_immediate())
-        ss << " " << std::to_string(z_imm());
-    if (z_is_register())
-        ss << " " << "x" << std::to_string(z_index());
-    if (z_is_network())
-        ss << " " << std::to_string(z_net());
-
-    ss << " ";
-
-    /* Check to see if there was a parallel network operation going
-     * on. */
-    if (parallel_network() == true) {
-        ss << "; ";
-        ss << std::to_string(parallel_net_out());
-        ss << " <- ";
-        ss << std::to_string(parallel_net_in());
-    }
-
-    /* This is a special format for NOPs, it's needed to match what
-     * Jonathan is doing in his disassambler. */
-    if ((op() == opcode::ADD) && y_is_immediate() && (y_imm() == 0)) {
-        std::stringstream ss;
-
-        if (d_is_network())
-            ss << std::to_string(d_net());
-        else if (d_is_immediate())
-            ss << std::to_string(d_imm());
-        else if (d_is_register())
-            ss << "x" << std::to_string(d_index());
-        else {
-            fprintf(stderr, "D is not net, imm, or reg\n");
-            goto print_and_abort;
-        }
-
-        ss << " = ";
-
-        if (x_is_network())
-            ss << std::to_string(x_net());
-        else if (x_is_immediate())
-            ss << std::to_string(x_imm());
-        else if (x_is_register())
-            ss << "x" << std::to_string(x_index());
-        else {
-            fprintf(stderr, "X is not net, imm, or reg\n");
-            goto print_and_abort;
-        }
-
-        ss << " ";
-
-        return ss.str();
-    }
-
-    return ss.str();
-
-print_and_abort:
-    fprintf(stderr, "  Other decode: '%s'\n", ss.str().c_str());
-    fprintf(stderr, "  HEX: 0x%X\n", _bits.bits);
-    abort();
-}
-
-instruction::ptr instruction::parse_hex(const std::string hex)
-{
-    auto hex2bits = [](const std::string hex)
-        {
-            inst_t bits;
-            std::stringstream ss;
-            ss << std::hex << hex;
-            ss >> bits.bits;
-            return bits;
-        };
-
-    auto bits = hex2bits(hex);
-
-    if (strstr(hex.c_str(), " ") == NULL) {
-        auto out = std::make_shared<instruction>(bits);
-        if (out->sanity_check() == false)
-            return NULL;
-        return out;
-    } else {
-        std::string debug = rtrim(strstr(hex.c_str(), " ") + 1);
-        auto out = std::make_shared<instruction>(bits, debug);
-        if (out->sanity_check() == false)
-            return NULL;
-        return out;
-    }
-}
-
-// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-std::string rtrim(const std::string &s_in)
-{
-    std::string s = s_in;
-    s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-    return s;
 }
