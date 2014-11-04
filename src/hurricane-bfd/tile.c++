@@ -44,6 +44,7 @@ lo(const std::vector<bundle::ptr>& bundles,
    size_t count)
 {
     std::vector<bundle::ptr> out(count);
+
     if (count > bundles.size()) {
         fprintf(stderr, "lo_count greater than bundle count: %llu %llu\n",
                 (long long unsigned)count,
