@@ -94,6 +94,8 @@ namespace hurricane_bfd {
         opcode::LDI,
         opcode::STI
     };
+
+    enum opcode to_opcode(const std::string& str);
 }
 
 namespace std {

@@ -20,6 +20,7 @@
 
 #include "opcode.h++"
 #include <cstdlib>
+#include <cstring>
 using namespace hurricane_bfd;
 
 std::string std::to_string(const hurricane_bfd::opcode& op)
@@ -83,5 +84,17 @@ std::string std::to_string(const hurricane_bfd::opcode& op)
 
     fprintf(stderr, "std::to_string(hurricane_bfd::opcode) overran switch\n");
     fprintf(stderr, "  This is frequently a compile corruption problem\n");
+    abort();
+}
+
+enum opcode hurricane_bfd::to_opcode(const std::string& str)
+{
+    for (const auto& opcode: all_opcodes)
+        if (strcmp(str.c_str(), std::to_string(opcode).c_str()) == 0)
+            return opcode;
+
+    std::fprintf(stderr, "Unable to convert '%s' to an opcode\n",
+                 str.c_str()
+        );
     abort();
 }
