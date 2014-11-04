@@ -19,63 +19,100 @@
  */
 
 #include "bundle.h++"
-#include "instruction_alu.h++"
-#include "instruction_net.h++"
+#include <algorithm>
+#include <cctype>
+#include <cstring>
+#include <functional>
+#include <locale>
 #include <sstream>
+#include <map>
+#include <memory>
+#include <cstdint>
+#include <cstdlib>
 using namespace hurricane_bfd;
 
-bundle::bundle(const instruction::ptr& a)
-    : _instructions({a})
+bundle::bundle(const std::vector<instruction::ptr>& instructions)
+    : _instructions(instructions),
+      _has_debug(false)
 {
 }
 
-
-bundle::bundle(const instruction::ptr& a, const instruction::ptr& b)
-    : _instructions({a, b})
+bundle::bundle(const std::vector<instruction::ptr>& instructions,
+               std::string debug)
+    : _instructions(instructions),
+      _has_debug(true),
+      _debug(debug)
 {
-}
-
-bundle::ptr bundle::parse_hex(const std::string hex)
-{
-    auto alu = instruction_alu::parse_hex(hex);
-    auto net = instruction_net::parse_hex(hex);
-
-    if ((alu == NULL) && (net == NULL))
-        return NULL;
-    if ((alu != NULL) && (net == NULL))
-        return std::make_shared<bundle>(alu);
-    if ((alu != NULL) && (net != NULL))
-        return std::make_shared<bundle>(alu, net);
-    if ((alu == NULL) && (net != NULL))
-        return std::make_shared<bundle>(net);
-
-    return NULL;
 }
 
 std::string bundle::jrb_string(void) const
 {
-    if (instructions().size() == 1)
-        return instructions()[0]->jrb_string() + " ";
+    std::stringstream ss;
+    bool first = true;
 
-    return instructions()[0]->jrb_string() + " ; " + instructions()[1]->jrb_string();
+    for (const auto& inst: instructions()) {
+        if (first == false)
+            ss << "; ";
+
+        ss << inst->jrb_string();
+
+        first = false;
+    }
+
+    return ss.str();
 }
 
 std::string bundle::as_string(void) const
 {
-    if (instructions().size() == 1)
-        return instructions()[0]->as_string();
-
     std::stringstream ss;
-    ss << "{ ";
     bool first = true;
-    for (const auto& instruction: instructions()) {
-        if (first)
-            ss << instruction->as_string();
-        else
-            ss << " ; " << instruction->as_string();
+
+    if (instructions().size() > 1)
+        ss << "{ ";
+
+    for (const auto& inst: instructions()) {
+        if (first == false)
+            ss << " ; ";
+
+        ss << inst->as_string();
+
         first = false;
     }
-    ss << " }";
+
+    if (instructions().size() > 1)
+        ss << "} ";
 
     return ss.str();
+}
+
+bundle::ptr bundle::parse_hex(const std::string hex)
+{
+    std::vector<instruction::ptr> is;
+
+    auto add = [&](const instruction::ptr& p)
+        {
+            if (p != NULL)
+                is.push_back(p);
+        };
+
+    add(instruction::parse_hex_alu(hex, all_directions[0], true));
+    for (const auto dir: all_directions)
+        add(instruction::parse_hex_alu(hex, dir, false));
+    for (const auto dir: all_directions)
+        add(instruction::parse_hex_net(hex, dir));
+
+    // http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+    auto rtrim = [](const std::string &s_in)
+        {
+            std::string s = s_in;
+            s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+            return s;
+        };
+
+    if (strstr(hex.c_str(), " ") == NULL)
+        return std::make_shared<bundle>(is);
+    else {
+        std::string debug = rtrim(strstr(hex.c_str(), " ") + 1);
+        return std::make_shared<bundle>(is, debug);
+    }
 }

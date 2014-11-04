@@ -82,8 +82,8 @@ int main(int argc, const char **argv)
                 {
                     for (const auto& b: bundles) {
                         printf("%03d: %s", address, b->jrb_string().c_str());
-                        if (b->instructions()[0]->has_debug())
-                            printf(" // %s", b->instructions()[0]->debug().c_str());
+                        if (b->has_debug())
+                            printf(" // %s", b->debug().c_str());
                         printf("\n");
                         address++;
                     }

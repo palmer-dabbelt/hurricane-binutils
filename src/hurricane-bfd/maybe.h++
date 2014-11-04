@@ -18,33 +18,49 @@
  * along with hurricane-binutils.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBHURRICANE_BFD__INSTRUCTION_ALU_HXX
-#define LIBHURRICANE_BFD__INSTRUCTION_ALU_HXX
+#ifndef LIBHURRICANE_BFD__MAYBE_HXX
+#define LIBHURRICANE_BFD__MAYBE_HXX
 
-#include "instruction.h++"
+#include <cstdlib>
 
 namespace hurricane_bfd {
-    /* Represents a network instruction -- note that you probably
-     * don't want to depend on this outside of the BFD library, as it
-     * should go away eventually...  As such there are no comments
-     * here, it's just a bit of duplicated functionality from
-     * instruction and some virtual overrides. */
-    class instruction_alu: public instruction {
-        friend class instruction;
+    /* This is essentially a Unit tagged union, but  */
+    template <class T>
+    class maybe {
+    private:
+        const bool _valid;
+        const T _value;
 
     public:
-        instruction_alu(const inst_t& bits);
-        instruction_alu(const inst_t& bits, const std::string debug);
+        maybe(void)
+            : _valid(false),
+              _value()
+            {
+            }
 
-    protected:
-        bool sanity_check(void) const;
+        maybe(const T& value)
+            : _valid(true),
+              _value(value)
+            {
+            }
 
     public:
-        virtual std::string jrb_string(void) const;
-        virtual std::string as_string(void) const;
+        bool valid(void) const { return _valid; }
+        T value(void) const
+            {
+                if (_valid == false)
+                    abort();
 
-    public:
-        static instruction::ptr parse_hex(const std::string hex);
+                return _value;
+            }
+
+        bool operator==(T other)
+            {
+                if (_valid == false)
+                    return false;
+
+                return _value == other;
+            }
     };
 }
 

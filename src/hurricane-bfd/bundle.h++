@@ -35,14 +35,20 @@ namespace hurricane_bfd {
     private:
         const std::vector<instruction::ptr> _instructions;
 
+        const bool _has_debug;
+        const std::string _debug;
+
     public:
-        bundle(const instruction::ptr& a);
-        bundle(const instruction::ptr& a, const instruction::ptr& b);
         bundle(const std::vector<instruction::ptr>& instructions);
+        bundle(const std::vector<instruction::ptr>& instructions,
+               std::string debug);
 
     public:
         const std::vector<instruction::ptr> instructions(void) const
             { return _instructions; }
+
+        bool has_debug(void) const { return _has_debug; }
+        std::string debug(void) const { return _debug; }
 
     public:
         /* Returns a string representation of this instruction, in a
