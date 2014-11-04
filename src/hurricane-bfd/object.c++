@@ -64,7 +64,7 @@ void object::write_hex_file(FILE *file)
         for (const auto& tile: this->tiles())
             tile->address().update_max(x, y);
 
-        fprintf(file, "DIMS (%lu, %lu)\n", x, y);
+        fprintf(file, "DIMS (%lu, %lu)\n", x, y + 1);
     }
 
     for (const auto& tile: this->tiles()) {
