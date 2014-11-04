@@ -54,21 +54,24 @@ namespace hurricane_bfd {
         friend class std::shared_ptr<operand_reg>;
 
     private:
-        const unsigned int _index;
+        const unsigned int _idx;
 
     public:
-        operand_reg(unsigned int index)
-            : _index(index)
+        operand_reg(unsigned int idx)
+            : _idx(idx)
             {  }
 
+        unsigned int idx(void) const
+            { return _idx; }
+
         std::string to_string(void) const
-            { return std::string("x") + std::to_string(_index); }
+            { return std::string("x") + std::to_string(_idx); }
 
         maybe<int64_t> lit(void) const { return maybe<int64_t>(); }
         bool net(void) const { return false; }
 
-        static ptr index(unsigned int index)
-            { return std::make_shared<operand_reg>(index); }
+        static ptr index(unsigned int idx)
+            { return std::make_shared<operand_reg>(idx); }
     };
 
     class operand_net: public operand {
@@ -82,6 +85,9 @@ namespace hurricane_bfd {
         operand_net(enum direction dir)
             : _dir(dir)
             {  }
+
+        enum direction dir(void) const
+            { return _dir; }
 
         std::string to_string(void) const
             { return std::to_string(_dir); }
