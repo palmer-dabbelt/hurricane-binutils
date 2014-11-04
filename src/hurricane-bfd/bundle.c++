@@ -67,8 +67,7 @@ std::string bundle::as_string(void) const
     std::stringstream ss;
     bool first = true;
 
-    if (instructions().size() > 1)
-        ss << "{ ";
+    ss << "{ ";
 
     for (const auto& inst: instructions()) {
         if (first == false)
@@ -79,8 +78,7 @@ std::string bundle::as_string(void) const
         first = false;
     }
 
-    if (instructions().size() > 1)
-        ss << "} ";
+    ss << " }";
 
     return ss.str();
 }
