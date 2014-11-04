@@ -58,6 +58,7 @@ namespace hurricane_bfd {
          */
         std::string jrb_string(void) const;
         std::string as_string(void) const;
+        std::string hex_string(void) const;
 
     public:
         /* Parses an instruction from a HEX string as it would appear

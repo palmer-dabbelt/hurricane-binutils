@@ -95,6 +95,7 @@ namespace hurricane_bfd {
          * formats. */
         std::string jrb_string(void) const;
         std::string as_string(void) const;
+        uint32_t bits(void) const;
 
     public:
         /* These are kind of odd.  You probably don't want to be using

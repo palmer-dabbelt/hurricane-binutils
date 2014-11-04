@@ -532,6 +532,53 @@ std::string instruction::jrb_string(void) const
     return ss.str();
 }
 
+uint32_t instruction::bits(void) const
+{
+    inst_t bits; bits.bits = 0;
+    bits.inst.op = (int)_opcode;
+
+    switch (_opcode) {
+    case opcode::LIT:
+        bits.lit.di = _d->idx().value();
+        bits.lit.lit = _x->lit().value();
+        return bits.bits;
+
+    case opcode::NO:
+    case opcode::LDI:
+    case opcode::STI:
+    case opcode::LD:
+    case opcode::ST:
+    case opcode::MUX:
+    case opcode::ADD:
+    case opcode::AND:
+    case opcode::ARSH:
+    case opcode::CAT:
+    case opcode::EQ:
+    case opcode::GTE:
+    case opcode::LT:
+    case opcode::LSH:
+    case opcode::MUL:
+    case opcode::NEQ:
+    case opcode::OR:
+    case opcode::RSH:
+    case opcode::SUB:
+    case opcode::XOR:
+    case opcode::RST:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::MSK:
+    case opcode::LOG2:
+        fprintf(stderr, "instruction::bits() unimplemented for %s\n",
+                std::to_string(_opcode).c_str()
+            );
+        abort();
+        break;
+    }
+
+    return -1;
+}
+
 std::string instruction::as_string(void) const
 {
     std::stringstream ss;

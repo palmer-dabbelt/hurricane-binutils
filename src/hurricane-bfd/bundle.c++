@@ -31,6 +31,10 @@
 #include <cstdlib>
 using namespace hurricane_bfd;
 
+#ifndef BUFFER_SIZE
+#define BUFFER_SIZE 1024
+#endif
+
 bundle::bundle(const std::vector<instruction::ptr>& instructions)
     : _instructions(instructions),
       _has_debug(false)
@@ -81,6 +85,17 @@ std::string bundle::as_string(void) const
     ss << " }";
 
     return ss.str();
+}
+
+std::string bundle::hex_string(void) const
+{
+    uint32_t bits = 0;
+    for (const auto& instruction: instructions())
+        bits |= instruction->bits();
+
+    char buffer[BUFFER_SIZE];
+    snprintf(buffer, BUFFER_SIZE, "0x%x", bits);
+    return buffer;
 }
 
 bundle::ptr bundle::parse_hex(const std::string hex)

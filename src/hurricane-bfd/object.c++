@@ -72,6 +72,19 @@ void object::write_hex_file(FILE *file)
                 tile->address().name_with_space().c_str(),
                 tile->lo().size()
             );
+
+        auto print = [&](bundle::ptr b)
+            {
+                fprintf(file, "%s", b->hex_string().c_str());
+                if (b->has_debug())
+                    printf(" %s", b->debug().c_str());
+                printf("\n");
+            };
+
+        for (const auto& lo: tile->lo())
+            print(lo);
+        for (const auto& hi: tile->hi())
+            print(hi);
     }
 }
 
