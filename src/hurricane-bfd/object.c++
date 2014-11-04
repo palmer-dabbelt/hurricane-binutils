@@ -69,7 +69,7 @@ void object::write_hex_file(FILE *file)
 
     for (const auto& tile: this->tiles()) {
         fprintf(file, "TILE @ %s NUM_LO_INSTS = %lu\n",
-                tile->address().name().c_str(),
+                tile->address().name_with_space().c_str(),
                 tile->lo().size()
             );
     }

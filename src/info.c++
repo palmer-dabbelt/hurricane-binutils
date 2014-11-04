@@ -64,7 +64,7 @@ int main(int argc, const char **argv)
     }
 
     for (const auto& tile: object->tiles()) {
-        printf("Tile %s:\n", tile->address().name().c_str());
+        printf("Tile %s:\n", tile->address().name_without_space().c_str());
         printf("\tLow Instruction Count: %lu\n", tile->lo().size());
         printf("\tHigh Instruction Count: %lu\n", tile->hi().size());
     }

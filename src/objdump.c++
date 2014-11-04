@@ -76,7 +76,7 @@ int main(int argc, const char **argv)
     switch (mode) {
     case OUTPUT_MODE_JRB:
         for (const auto& tile: object->tiles()) {
-            printf("TILE @ %s\n", tile->address().name().c_str());
+            printf("TILE @ %s\n", tile->address().name_without_space().c_str());
             int address = 0;
             auto print = [&](const std::vector<hurricane_bfd::bundle::ptr>& bundles)
                 {

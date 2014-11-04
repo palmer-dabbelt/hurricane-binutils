@@ -28,7 +28,14 @@ tile_address::tile_address(size_t x, size_t y)
 {
 }
 
-std::string tile_address::name(void) const
+std::string tile_address::name_with_space(void) const
+{
+    std::stringstream ss;
+    ss << "(" << _x << ", " << _y << ")";
+    return ss.str();
+}
+
+std::string tile_address::name_without_space(void) const
 {
     std::stringstream ss;
     ss << "(" << _x << "," << _y << ")";

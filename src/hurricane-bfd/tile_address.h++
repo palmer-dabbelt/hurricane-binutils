@@ -33,7 +33,8 @@ namespace hurricane_bfd {
         tile_address(size_t x, size_t y);
 
     public:
-        std::string name(void) const;
+        std::string name_with_space(void) const;
+        std::string name_without_space(void) const;
         std::string mangled_name(void) const;
         void update_max(size_t& x, size_t& y) const;
     };
