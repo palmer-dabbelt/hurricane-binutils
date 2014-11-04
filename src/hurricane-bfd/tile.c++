@@ -21,52 +21,51 @@
 #include "tile.h++"
 using namespace hurricane_bfd;
 
-static std::vector<instruction::ptr>
-lo(const std::vector<instruction::ptr>& instructions,
+static std::vector<bundle::ptr>
+lo(const std::vector<bundle::ptr>& bundles,
    size_t count);
 
-static std::vector<instruction::ptr>
-hi(const std::vector<instruction::ptr>& instructions,
+static std::vector<bundle::ptr>
+hi(const std::vector<bundle::ptr>& bundles,
    size_t count);
 
 tile::tile(const tile_address& addr,
-           size_t lo_instruction_count,
-           std::vector<instruction::ptr> instructions)
+           size_t lo_bundle_count,
+           std::vector<bundle::ptr> bundles)
     : _addr(addr),
-      _lo(::lo(instructions, lo_instruction_count)),
-      _hi(::hi(instructions, lo_instruction_count))
+      _lo(::lo(bundles, lo_bundle_count)),
+      _hi(::hi(bundles, lo_bundle_count))
 {
 }
 
 
-std::vector<instruction::ptr>
-lo(const std::vector<instruction::ptr>& instructions,
+std::vector<bundle::ptr>
+lo(const std::vector<bundle::ptr>& bundles,
    size_t count)
 {
-    std::vector<instruction::ptr> out(count);
-
-    if (count > instructions.size()) {
-        fprintf(stderr, "lo_count greater than instruction count: %llu %llu\n",
+    std::vector<bundle::ptr> out(count);
+    if (count > bundles.size()) {
+        fprintf(stderr, "lo_count greater than bundle count: %llu %llu\n",
                 (long long unsigned)count,
-                (long long unsigned)instructions.size()
+                (long long unsigned)bundles.size()
             );
         abort();
     }
 
     for (size_t i = 0; i < count; ++i)
-        out[i] = instructions[i];
+        out[i] = bundles[i];
 
     return out;
 }
 
-std::vector<instruction::ptr>
-hi(const std::vector<instruction::ptr>& instructions,
+std::vector<bundle::ptr>
+hi(const std::vector<bundle::ptr>& bundles,
    size_t count)
 {
-    std::vector<instruction::ptr> out(instructions.size() - count);
+    std::vector<bundle::ptr> out(bundles.size() - count);
 
-    for (size_t i = count; i < instructions.size(); ++i)
-        out[i - count] = instructions[i];
+    for (size_t i = count; i < bundles.size(); ++i)
+        out[i - count] = bundles[i];
 
     return out;
 }

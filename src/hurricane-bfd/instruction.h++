@@ -23,191 +23,88 @@
 
 #include "direction.h++"
 #include "opcode.h++"
-#include <map>
-#include <memory>
-#include <cstdint>
-#include <cstdlib>
+#include "operand.h++"
+#include "maybe.h++"
 
 namespace hurricane_bfd {
     /* Stores a single instruction. */
     class instruction {
     public:
         typedef std::shared_ptr<instruction> ptr;
-
-        /* Some types for the decoded instructions. */
-        typedef unsigned int reg_index_t;
-        typedef unsigned int immediate_t;
-        typedef unsigned int width_t;
+        friend class std::shared_ptr<instruction>;
 
     private:
-        union inst {
-            uint32_t bits;
-
-            /* These bits are true for all instruction encoding
-             * formats, so you can always look at them!  This matches
-             * the definiton of the FixInst from Scala. */
-            struct {
-                unsigned int out : 4;
-                unsigned int in  : 2;
-                unsigned int zi  : 5;
-                unsigned int yi  : 5;
-                unsigned int iy  : 1;
-                unsigned int xi  : 5;
-                unsigned int di  : 5;
-                unsigned int op  : 5;
-            } inst __attribute__((packed));
-
-            /* The format used for "lit". */
-            struct {
-                unsigned int out : 4;
-                unsigned int in  : 2;
-                unsigned int lit : 16;
-                unsigned int di  : 5;
-                unsigned int op  : 5;
-            } lit __attribute__((packed));
-
-            /* The format used for "sti". */
-            struct {
-                unsigned int out : 4;
-                unsigned int in  : 2;
-                unsigned int off : 10;
-                unsigned int en  : 1;
-                unsigned int xi  : 5;
-                unsigned int di  : 5;
-                unsigned int op  : 5;
-            } sti __attribute__((packed));
-
-            /* The format used for "ldi". */
-            struct {
-                unsigned int out : 4;
-                unsigned int in  : 2;
-                unsigned int off : 10;
-                unsigned int en  : 1;
-                unsigned int xi  : 5;
-                unsigned int di  : 5;
-                unsigned int op  : 5;
-            } ldi __attribute__((packed));
-        };
-        typedef union inst inst_t;
-
-    private:
-        const inst_t _bits;
-        const bool _has_debug;
-        const std::string _debug;
+        enum opcode _opcode;
+        std::shared_ptr<operand> _d;
+        std::shared_ptr<operand> _x;
+        std::shared_ptr<operand> _y;
+        std::shared_ptr<operand> _z;
 
     public:
-        /* Allows for the construction of an instruction by
-         * passing in the raw bits that represent it -- note that
-         * you don't want to call these directly, instead call a
-         * more descriptive static method below.  They're only
-         * public because of std::shared_ptr.*/
-        instruction(const inst_t& bits);
-        instruction(const inst_t& bits, const std::string debug);
-
-    private:
-        /* Runs some sanity checks on this instruction -- this
-         * will happen every time an instruction is generated, but
-         * it'll happen as part of one of the static functions
-         * because they can return NULL. */
-        bool sanity_check(void) const;
-
-    public:
-        /* Accessor functions. */
-        inst_t bits(void) const { return _bits; }
-        bool has_debug(void) const { return _has_debug; }
-        std::string debug(void) const {
-            if (_has_debug == false)
-                abort();
-            return _debug;
-        }
+        /* A bunch of different constructors that represent the
+         * different instruction formats.  Note that you're probably
+         * not going to want to actually use these, as they're a bit
+         * dangerous. */
+        instruction(enum opcode op);
+        instruction(enum opcode op,
+                    const operand::ptr& d);
+        instruction(enum opcode op,
+                    const operand::ptr& d,
+                    const operand::ptr& x);
+        instruction(enum opcode op,
+                    const operand::ptr& d,
+                    const operand::ptr& x,
+                    const operand::ptr& y);
+        instruction(enum opcode op,
+                    const operand::ptr& d,
+                    const operand::ptr& x,
+                    const operand::ptr& y,
+                    const operand::ptr& z);
 
     public:
-        /* Returns this instruction's opcode.  This can't abort, as
-         * every instruction has an opcode. */
-        enum opcode op(void) const;
+        /* Returns all the operands in order, including the
+         * destination. */
+        std::vector<operand::ptr> operands(void) const;
 
-        /* Guarded mechanisms for decoding instructions.  Note that
-         * you should only call these when the correct opcode exists,
-         * otherwise they will abort! */
+        /* Returns the input operands, in some sort of order. */
+        std::vector<operand::ptr> inputs(void) const;
 
-        /* Returns the register index associated with these register
-         * identifiers. */
-        reg_index_t d_index(void) const;
-        reg_index_t x_index(void) const;
-        reg_index_t y_index(void) const;
-        reg_index_t z_index(void) const;
+        /* Either returns FALSE, which indicates there is no
+         * destination, or a destination operand. */
+        maybe<operand::ptr> d(void) const;
 
-        /* Returns TRUE if the X source is a network operation, as
-         * opposed to a local operation (which can be either an
-         * immediate or a register index). */
-        bool d_is_register(void) const;
-        bool x_is_register(void) const;
-        bool y_is_register(void) const;
-        bool z_is_register(void) const;
+        /* Inputs to binary operations. */
+        maybe<operand::ptr> x(void) const;
+        maybe<operand::ptr> y(void) const;
 
-        /* Returns the immediate associated with these spots in the
-         * instruction format.  You should be sure to check that these
-         * immediates are immediates first before trying to use them,
-         * as they'll abort! */
-        immediate_t d_imm(void) const;
-        immediate_t x_imm(void) const;
-        immediate_t y_imm(void) const;
-        immediate_t z_imm(void) const;
+        /* Returns the select signal, which is only valid for MUX. */
+        maybe<operand::ptr> sel(void) const;
+        maybe<operand::ptr> hi(void) const;
+        maybe<operand::ptr> lo(void) const;
 
-        /* Returns TRUE if these decode slots are an immediate, and
-         * FALSE if they're not. */
-        bool d_is_immediate(void) const;
-        bool x_is_immediate(void) const;
-        bool y_is_immediate(void) const;
-        bool z_is_immediate(void) const;
+        /* Returns the base and offset used for memory operations. */
+        maybe<operand::ptr> base(void) const;
+        maybe<operand::ptr> offset(void) const;
 
-        /* Returns a map that contains the network half of this
-         * operation.  Every network direction is in this map, TRUE
-         * means they're active and FALSE means they're not. */
-        std::map<enum direction, bool> d_net(void) const;
-        std::map<enum direction, bool> x_net(void) const;
-        std::map<enum direction, bool> y_net(void) const;
-        std::map<enum direction, bool> z_net(void) const;
+        /* Either returns FALSE, which indicates that there is no mask
+         * on this operation, or an integer, which consists of the
+         * mask. */
+        maybe<operand::ptr> mask(void) const;
 
-        /* Returns TRUE if the X source is a network operation, as
-         * opposed to a local operation (which can be either an
-         * immediate or a register index). */
-        bool d_is_network(void) const;
-        bool x_is_network(void) const;
-        bool y_is_network(void) const;
-        bool z_is_network(void) const;
-
-        /* REturns the width that these operands can take on, aborting
-         * if that's not valid. */
-        width_t d_width(void) const;
-        width_t x_width(void) const;
-        width_t y_width(void) const;
-        width_t z_width(void) const;
-
-        /* Returns TRUE if the operand should be treated as a width,
-         * and FALSE otherwise. */
-        bool d_is_width(void) const;
-        bool x_is_width(void) const;
-        bool y_is_width(void) const;
-        bool z_is_width(void) const;
-
-        /* Special logic for checking for a parallel move
-         * operation. */
-        bool parallel_network(void) const;
-        std::map<enum direction, bool> parallel_net_out(void) const;
-        std::map<enum direction, bool> parallel_net_in(void) const;
-
-        /* Returns a string representation of this instruction. */
-        std::string to_string(void) const;
-
-        /* Returns a new copy of this instruction with some debug
-         * info attached to it. */
-        ptr with_debug(const std::string debug);
+        /* Formats this instruction as a string, in multiple different
+         * formats. */
+        std::string jrb_string(void) const;
+        std::string as_string(void) const;
 
     public:
-        /* Parses an instruction from a HEX string as it would
-         * appear in a HEX file. */
-        static ptr parse_hex(const std::string hex);
+        /* These are kind of odd.  You probably don't want to be using
+         * them, but instead want to make a bundle from a HEX file
+         * line. */
+        static ptr parse_hex_alu(const std::string hex,
+                                 enum direction allow_out_dir,
+                                 bool allow_reg);
+        static ptr parse_hex_net(const std::string hex,
+                                 enum direction allow_out_dir);
     };
 }
 

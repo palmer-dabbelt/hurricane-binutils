@@ -18,39 +18,49 @@
  * along with hurricane-binutils.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBHURRICANE_ELF__TILE_HXX
-#define LIBHURRICANE_ELF__TILE_HXX
+#ifndef LIBHURRICANE_BFD__MAYBE_HXX
+#define LIBHURRICANE_BFD__MAYBE_HXX
 
-#include "tile_address.h++"
-#include "bundle.h++"
-#include <string>
-#include <vector>
+#include <cstdlib>
 
 namespace hurricane_bfd {
-    class tile {
-    public:
-        typedef std::shared_ptr<tile> ptr;
-
+    /* This is essentially a Unit tagged union, but  */
+    template <class T>
+    class maybe {
     private:
-        const tile_address _addr;
-        std::vector<bundle::ptr> _lo;
-        std::vector<bundle::ptr> _hi;
+        const bool _valid;
+        const T _value;
 
     public:
-        tile(const tile_address& addr,
-             std::vector<bundle::ptr> lo,
-             std::vector<bundle::ptr> hi);
+        maybe(void)
+            : _valid(false),
+              _value()
+            {
+            }
 
-        tile(const tile_address& addr,
-             size_t lo_instruction_count,
-             std::vector<bundle::ptr> instructions);
+        maybe(const T& value)
+            : _valid(true),
+              _value(value)
+            {
+            }
 
     public:
-        const tile_address& address(void) const { return _addr; }
-        const std::vector<bundle::ptr> lo(void) const { return _lo; }
-        const std::vector<bundle::ptr> hi(void) const { return _hi; }
-        
-    public:
+        bool valid(void) const { return _valid; }
+        T value(void) const
+            {
+                if (_valid == false)
+                    abort();
+
+                return _value;
+            }
+
+        bool operator==(T other)
+            {
+                if (_valid == false)
+                    return false;
+
+                return _value == other;
+            }
     };
 }
 

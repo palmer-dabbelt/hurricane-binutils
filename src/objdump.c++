@@ -27,7 +27,8 @@
 static void print_help_text(FILE *out);
 
 enum output_mode {
-    OUTPUT_MODE_JRB
+    OUTPUT_MODE_JRB,
+    OUTPUT_MODE_AS,
 };
 
 int main(int argc, const char **argv)
@@ -45,6 +46,8 @@ int main(int argc, const char **argv)
             return 0;
         } else if (strcmp(argv[i], "--jrb") == 0) {
             mode = OUTPUT_MODE_JRB;
+        } else if (strcmp(argv[i], "--as") == 0) {
+            mode = OUTPUT_MODE_AS;
         } else {
             input_filename = argv[i];
         }
@@ -75,12 +78,12 @@ int main(int argc, const char **argv)
         for (const auto& tile: object->tiles()) {
             printf("TILE @ %s\n", tile->address().name().c_str());
             int address = 0;
-            auto print = [&](const std::vector<hurricane_bfd::instruction::ptr>& instructions)
+            auto print = [&](const std::vector<hurricane_bfd::bundle::ptr>& bundles)
                 {
-                    for (const auto& i: instructions) {
-                        printf("%03d: %s", address, i->to_string().c_str());
-                        if (i->has_debug())
-                            printf(" // %s", i->debug().c_str());
+                    for (const auto& b: bundles) {
+                        printf("%03d: %s", address, b->jrb_string().c_str());
+                        if (b->has_debug())
+                            printf(" // %s", b->debug().c_str());
                         printf("\n");
                         address++;
                     }
@@ -90,6 +93,7 @@ int main(int argc, const char **argv)
         }
         break;
 
+    case OUTPUT_MODE_AS:
         for (const auto& tile: object->tiles()) {
             auto mangled_name_str = tile->address().mangled_name();
             auto mangled_name = mangled_name_str.c_str();
@@ -99,13 +103,13 @@ int main(int argc, const char **argv)
             printf("global _lo_%s\n", mangled_name);
             printf("_lo_%s:\n", mangled_name);
             for (const auto& i: tile->lo())
-                printf("\t%s\n", i->to_string().c_str());
+                printf("\t%s\n", i->as_string().c_str());
             printf("\n");
 
             printf("global _hi_%s\n", mangled_name);
             printf("_hi_%s:\n", mangled_name);
             for (const auto& i: tile->hi())
-                printf("\t%s\n", i->to_string().c_str());
+                printf("\t%s\n", i->as_string().c_str());
             printf("\n");
 
             printf("section .data__tile_%s\n\n", mangled_name);

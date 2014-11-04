@@ -200,28 +200,28 @@ object::ptr object::read_hex_file(FILE *file)
 
         int lo, x, y;
         if (sscanf(line, "TILE @ (%d, %d) NUM_LO_INSTS = %d\n", &x, &y, &lo) == 3) {
-            std::vector<instruction::ptr> instructions;
+            std::vector<bundle::ptr> bundles;
             while (fgets(line, BUFFER_SIZE, file) != NULL) {
                 line_number++;
 
                 if (strncmp(line, "0x", 2) != 0)
                     break;
 
-                auto inst = instruction::parse_hex(line);
-                if (inst == NULL) {
-                    fprintf(stderr, "Unable to parse instruction at %lld: %s\n",
+                auto b = bundle::parse_hex(line);
+                if (b == NULL) {
+                    fprintf(stderr, "Unable to parse bundle at %lld: %s\n",
                             line_number,
                             line
                         );
                     return NULL;
                 }
 
-                instructions.push_back(inst);
+                bundles.push_back(b);
                 line[0] = '\0';
             }
 
             auto address = tile_address(x, y);
-            auto t = std::make_shared<tile>(address, lo, instructions);
+            auto t = std::make_shared<tile>(address, lo, bundles);
             if (t == NULL)
                 abort();
             tiles.push_back(t);
