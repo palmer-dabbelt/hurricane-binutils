@@ -600,7 +600,8 @@ std::string instruction::as_string(void) const
     ss << std::to_string(_opcode);
 
     for (const auto& op: operands())
-        ss << " " << std::to_string(op);
+        if (op != NULL)
+            ss << " " << std::to_string(op);
 
     return ss.str();
 }
