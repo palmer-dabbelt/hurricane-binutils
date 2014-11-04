@@ -39,9 +39,13 @@ namespace hurricane_bfd {
          * is a literal. */
         virtual maybe<int64_t> lit(void) const = 0;
 
-        /* Returns TRUE if this is a network operation, and FALSE
-         * otherwise. */
-        virtual bool net(void) const = 0;
+        /* Returns FALSE if this is not a register index, or the
+         * register index. */
+        virtual maybe<unsigned int> idx(void) const = 0;
+
+        /* Returns FALSE if this is not a network port, or the
+         * direction if it is. */
+        virtual maybe<enum direction> dir(void) const = 0;
     };
 
     /* The rest of these are just specific implementations of the
@@ -61,14 +65,12 @@ namespace hurricane_bfd {
             : _idx(idx)
             {  }
 
-        unsigned int idx(void) const
-            { return _idx; }
-
         std::string to_string(void) const
             { return std::string("x") + std::to_string(_idx); }
 
         maybe<int64_t> lit(void) const { return maybe<int64_t>(); }
-        bool net(void) const { return false; }
+        maybe<unsigned int> idx(void) const { return maybe<unsigned int>(_idx); }
+        maybe<enum direction> dir(void) const { return maybe<enum direction>(); }
 
         static ptr index(unsigned int idx)
             { return std::make_shared<operand_reg>(idx); }
@@ -86,14 +88,12 @@ namespace hurricane_bfd {
             : _dir(dir)
             {  }
 
-        enum direction dir(void) const
-            { return _dir; }
-
         std::string to_string(void) const
             { return std::to_string(_dir); }
 
         maybe<int64_t> lit(void) const { return maybe<int64_t>(); }
-        bool net(void) const { return true; }
+        maybe<unsigned int> idx(void) const { return maybe<unsigned int>(); }
+        maybe<enum direction> dir(void) const { return maybe<enum direction>(_dir); }
 
         static ptr direction(enum direction dir)
             { return std::make_shared<operand_net>(dir); }
@@ -115,7 +115,8 @@ namespace hurricane_bfd {
             { return std::to_string(_value); }
 
         maybe<int64_t> lit(void) const { return maybe<int64_t>(_value); }
-        bool net(void) const { return false; }
+        maybe<unsigned int> idx(void) const { return maybe<unsigned int>(); }
+        maybe<enum direction> dir(void) const { return maybe<enum direction>(); }
 
         static ptr uint(uint32_t value)
             { return std::make_shared<operand_lit>(value); }

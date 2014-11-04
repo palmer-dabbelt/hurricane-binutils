@@ -510,7 +510,7 @@ std::string instruction::jrb_string(void) const
     std::stringstream ss;
 
     if ((_opcode == opcode::ADD) && (_y->lit() == 0)) {
-        if (_x->net() && _d->net())
+        if (_x->dir().valid() && _d->dir().valid())
             ss << std::to_string(_d) << " <- " << std::to_string(_x);
         else
             ss << std::to_string(_d) << " = " << std::to_string(_x) << " ";
