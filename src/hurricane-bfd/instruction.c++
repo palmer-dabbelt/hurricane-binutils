@@ -82,6 +82,10 @@ typedef union inst inst_t;
  * string. */
 static inst_t to_inst(const std::string hex);
 
+/* Deals with the fact that some registers don't have a destination
+ * register. */
+static size_t opmap(enum opcode op, size_t index);
+
 instruction::instruction(enum opcode op)
     : _opcode(op),
       _d(NULL),
@@ -134,6 +138,16 @@ instruction::instruction(enum opcode op,
       _x(x),
       _y(y),
       _z(z)
+{
+}
+
+instruction::instruction(enum opcode op,
+                         const std::vector<operand::ptr>& ops)
+    : _opcode(op),
+      _d(ops.size() > opmap(op, 0) ? ops[opmap(op, 0)] : NULL),
+      _x(ops.size() > opmap(op, 1) ? ops[opmap(op, 1)] : NULL),
+      _y(ops.size() > opmap(op, 2) ? ops[opmap(op, 2)] : NULL),
+      _z(ops.size() > opmap(op, 3) ? ops[opmap(op, 3)] : NULL)
 {
 }
 
@@ -842,4 +856,48 @@ inst_t to_inst(const std::string hex)
     ss << std::hex << hex;
     ss >> bits.bits;
     return bits;
+}
+
+size_t opmap(enum opcode op, size_t index)
+{
+    switch (op) {
+    case opcode::ST:
+    case opcode::STI:
+        return index - 1;
+
+    case opcode::NO:
+    case opcode::LIT:
+    case opcode::CAT:
+    case opcode::LDI:
+    case opcode::ADD:
+    case opcode::AND:
+    case opcode::ARSH:
+    case opcode::EQ:
+    case opcode::GTE:
+    case opcode::LT:
+    case opcode::LSH:
+    case opcode::MUL:
+    case opcode::NEQ:
+    case opcode::OR:
+    case opcode::RSH:
+    case opcode::SUB:
+    case opcode::XOR:
+    case opcode::LD:
+    case opcode::MUX:
+        return index;
+
+    case opcode::RST:
+    case opcode::RND:
+    case opcode::EAT:
+    case opcode::NOT:
+    case opcode::MSK:
+    case opcode::LOG2:
+        fprintf(stderr, "opmap() unimplemented for %s\n",
+                std::to_string(op).c_str()
+            );
+        abort();
+        break;
+    }
+
+    return -1;
 }

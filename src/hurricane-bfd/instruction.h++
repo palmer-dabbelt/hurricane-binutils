@@ -60,6 +60,8 @@ namespace hurricane_bfd {
                     const operand::ptr& x,
                     const operand::ptr& y,
                     const operand::ptr& z);
+        instruction(enum opcode op,
+                    const std::vector<operand::ptr>& ops);
 
     public:
         /* Returns all the operands in order, including the
