@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd src/
+find hurricane-as/ -iname "*.h++" | while read f
+do
+    echo "HEADERS += hurricane-as/$f"
+    echo "SOURCES += $f"
+done

@@ -1,0 +1,12 @@
+prefix=@@pconfigure_prefix@@
+exec_prefix=@@pconfigure_prefix@@
+libdir=${prefix}/@@pconfigure_libdir@@
+includedir=${prefix}/@@pconfigure_hdrdir@@
+
+Name: hurricane-as
+Description: The Hurricane assembler, availiable as a C++ library
+Version: @@pconfigure_version@@
+Requires: hurricane-bfd
+Libs: -Wl,-rpath,${libdir} -L${libdir} -lhurricane-as
+Cflags: -I${includedir} 
+URL: http://github.com/palmer-dabbelt/hurricane-binutils/

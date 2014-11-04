@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cd src/
+find hurricane-as/ -iname "*.c++" | while read f
+do
+    echo "SOURCES += $f"
+done

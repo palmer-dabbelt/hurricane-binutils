@@ -30,6 +30,7 @@ GENERATE    += version-pc.sed
 # This is the main library, all the binaries here pretty much just
 # call into it.
 LIBRARIES   += libhurricane-bfd.so
+AUTODEPS     = false
 CONFIG      += libhurricane-bfd-sources
 CONFIG      += libhurricane-bfd-headers
 LIBRARIES   += pkgconfig/hurricane-bfd.pc
@@ -43,4 +44,19 @@ TESTSRC     += 1tile1zero.bash
 # Dumps the assembly for a binary
 BINARIES    += hurricane-objdump
 SOURCES     += objdump.c++
+TESTSRC     += histogram.bash
+
+# An assembler, which is availiable as both a library and as a
+# command-line program.
+LIBRARIES   += libhurricane-as.so
+AUTODEPS     = false
+CONFIG      += libhurricane-as-sources
+CONFIG      += libhurricane-as-headers
+LIBRARIES   += pkgconfig/hurricane-as.pc
+SOURCES     += hurricane-as/hurricane-as.pc
+
+BINARIES    += hurricane-as
+TESTDEPS    += bin/hurricane-objdump
+SOURCES     += as.c++
+TESTSRC     += lit.bash
 TESTSRC     += histogram.bash
