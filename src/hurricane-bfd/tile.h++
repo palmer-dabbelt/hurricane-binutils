@@ -37,10 +37,16 @@ namespace hurricane_bfd {
         std::vector<bundle::ptr> _hi;
 
     public:
+        /* Creates an empty tile with no instructions on it at all. */
+        tile(const tile_address& addr);
+
+        /* Creates a tile given the instruction sections. */
         tile(const tile_address& addr,
              std::vector<bundle::ptr> lo,
              std::vector<bundle::ptr> hi);
 
+        /* Creates a tile given all the instructions along with a
+         * split point between the clock_lo and clock_hi sections. */
         tile(const tile_address& addr,
              size_t lo_instruction_count,
              std::vector<bundle::ptr> instructions);
@@ -49,7 +55,10 @@ namespace hurricane_bfd {
         const tile_address& address(void) const { return _addr; }
         const std::vector<bundle::ptr> lo(void) const { return _lo; }
         const std::vector<bundle::ptr> hi(void) const { return _hi; }
-        
+
+        void add_lo(const bundle::ptr& b) { _lo.push_back(b); }
+        void add_hi(const bundle::ptr& b) { _hi.push_back(b); }
+
     public:
     };
 }

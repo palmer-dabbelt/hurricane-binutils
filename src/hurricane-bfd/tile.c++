@@ -29,6 +29,13 @@ static std::vector<bundle::ptr>
 hi(const std::vector<bundle::ptr>& bundles,
    size_t count);
 
+tile::tile(const tile_address& addr)
+    : _addr(addr),
+      _lo(),
+      _hi()
+{
+}
+
 tile::tile(const tile_address& addr,
            size_t lo_bundle_count,
            std::vector<bundle::ptr> bundles)
