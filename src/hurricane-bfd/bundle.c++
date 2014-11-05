@@ -87,11 +87,37 @@ std::string bundle::as_string(void) const
     return ss.str();
 }
 
+/* FIXME: This isn't actually correct, it just happens to work because
+ * it's the only way the DREAMER compiler actually emits
+ * instructions. */
 std::string bundle::hex_string(void) const
 {
     uint32_t bits = 0;
-    for (const auto& instruction: instructions())
-        bits |= instruction->bits();
+
+    if (instructions().size() >= 1) {
+        bits |= instructions()[0]->bits();
+    }
+
+    if (instructions().size() >= 2) {
+        auto i = instructions()[1];
+
+        if ((i->op() != opcode::ADD)
+            || (i->d().value()->dir().valid() == false)
+            || (i->x().value()->dir().valid() == false)
+            || (i->y().value()->lit().valid() == false)
+            || (i->y().value()->lit().value() != 0)) {
+            fprintf(stderr, "The second operation in a bundle must be a parallel network op\n");
+            abort();
+        }
+
+        bits |= 1 << (int)(i->d().value()->dir().value());
+        bits |= (int)(i->x().value()->dir().value()) << 4;
+    }
+
+    if (instructions().size() >= 3) {
+        fprintf(stderr, "Unable to bundle more than 2 instructions.\n");
+        abort();
+    }
 
     char buffer[BUFFER_SIZE];
     snprintf(buffer, BUFFER_SIZE, "0x%.8x", bits);

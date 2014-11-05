@@ -64,6 +64,8 @@ namespace hurricane_bfd {
                     const std::vector<operand::ptr>& ops);
 
     public:
+        enum opcode op(void) const { return _opcode; }
+
         /* Returns all the operands in order, including the
          * destination. */
         std::vector<operand::ptr> operands(void) const;
