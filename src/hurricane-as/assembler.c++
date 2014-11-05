@@ -21,6 +21,7 @@
 #include "assembler.h++"
 #include "label.h++"
 #include <cstring>
+#include <sstream>
 #include <map>
 #include <regex>
 using namespace hurricane_as;
