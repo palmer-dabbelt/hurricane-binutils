@@ -13,6 +13,12 @@ fi
 cat input.S
 cat output.gold
 
+$PTEST_BINARY $FORMAT input.S > output.test ||
+  ( cat output.gold | head -n $(cat output.test | wc -l) > output.gold.part;
+      diff -u output.gold.part output.test;
+      exit 1 )
+diff -u output.gold output.test
+
 valgrind="$(which valgrind 2> /dev/null || true)"
 if [[ "$valgrind" != "" ]]
 then
@@ -26,6 +32,3 @@ then
 
     diff -u output.gold output.test
 fi
-
-$PTEST_BINARY $FORMAT input.S > output.test
-diff -u output.gold output.test

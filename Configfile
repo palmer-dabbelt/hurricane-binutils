@@ -60,4 +60,5 @@ BINARIES    += hurricane-as
 TESTDEPS    += bin/hurricane-objdump
 SOURCES     += as.c++
 TESTSRC     += lit.bash
-#TESTSRC     += histogram.bash
+TESTSRC     += netops.bash
+TESTSRC     += histogram.bash

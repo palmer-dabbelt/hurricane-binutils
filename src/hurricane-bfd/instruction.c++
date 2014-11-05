@@ -552,17 +552,47 @@ uint32_t instruction::bits(void) const
     bits.inst.op = (int)_opcode;
 
     switch (_opcode) {
+    case opcode::NO:
+        return 0;
+
     case opcode::LIT:
-        bits.lit.di = _d->idx().value();
-        bits.lit.lit = _x->lit().value();
+        if (_d->idx().valid()) {
+            bits.lit.di = _d->idx().value();
+        } else if (_d->lit().valid()) {
+            fprintf(stderr, "Unable to generate D literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_d->dir().valid()) {
+            bits.lit.di = 31;
+            bits.lit.out = 1 << (int)(_d->dir().value());
+        }
+
+        if (_x->idx().valid()) {
+            fprintf(stderr, "Unable to generate X register for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_x->lit().valid()) {
+            bits.lit.lit = _x->lit().value();
+        } else if (_x->dir().valid()) {
+            fprintf(stderr, "Unable to generate X network for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        if (_y != NULL) {
+            fprintf(stderr, "Unable to generate any Y for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        if (_z != NULL) {
+            fprintf(stderr, "Unable to generate any Z for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
         return bits.bits;
 
-    case opcode::NO:
-    case opcode::LDI:
-    case opcode::STI:
-    case opcode::LD:
-    case opcode::ST:
-    case opcode::MUX:
     case opcode::ADD:
     case opcode::AND:
     case opcode::ARSH:
@@ -577,6 +607,268 @@ uint32_t instruction::bits(void) const
     case opcode::RSH:
     case opcode::SUB:
     case opcode::XOR:
+        if (_d->idx().valid()) {
+            bits.inst.di = _d->idx().value();
+        } else if (_d->lit().valid()) {
+            fprintf(stderr, "Unable to generate D literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_d->dir().valid()) {
+            bits.inst.di = 31;
+            bits.inst.out = 1 << (int)(_d->dir().value());
+        }
+
+        if (_x->idx().valid()) {
+            bits.inst.xi = _x->idx().value();
+        } else if (_x->lit().valid()) {
+            fprintf(stderr, "Unable to generate X literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_x->dir().valid()) {
+            bits.inst.xi = 31;
+            bits.inst.in = (int)(_x->dir().value());
+        }
+
+        if (_y->idx().valid()) {
+            bits.inst.iy = 0;
+            bits.inst.yi = _y->idx().value();
+        } else if (_y->lit().valid()) {
+            bits.inst.iy = 1;
+            bits.inst.yi = _y->lit().value();
+        } else if (_y->dir().valid()) {
+            bits.inst.iy = 0;
+            bits.inst.yi = 31;
+            bits.inst.in = (int)(_y->dir().value());
+        }
+
+        if (_z == NULL) {
+            bits.inst.zi = 0;
+        } else if (_z->idx().valid()) {
+            fprintf(stderr, "Unable to generate Z register for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_z->lit().valid()) {
+            bits.inst.zi = _z->lit().value();
+        } else if (_z->dir().valid()) {
+            fprintf(stderr, "Unable to generate Z network for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        return bits.bits;
+
+    case opcode::MUX:
+        if (_d->idx().valid()) {
+            bits.inst.di = _d->idx().value();
+        } else if (_d->lit().valid()) {
+            fprintf(stderr, "Unable to generate D literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_d->dir().valid()) {
+            bits.inst.di = 31;
+            bits.inst.out = 1 << (int)(_d->dir().value());
+        }
+
+        if (_x->idx().valid()) {
+            bits.inst.xi = _x->idx().value();
+        } else if (_x->lit().valid()) {
+            fprintf(stderr, "Unable to generate X literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_x->dir().valid()) {
+            bits.inst.xi = 31;
+            bits.inst.in = (int)(_x->dir().value());
+        }
+
+        if (_y->idx().valid()) {
+            bits.inst.iy = 0;
+            bits.inst.yi = _y->idx().value();
+        } else if (_y->lit().valid()) {
+            bits.inst.iy = 1;
+            bits.inst.yi = _y->lit().value();
+        } else if (_y->dir().valid()) {
+            bits.inst.iy = 0;
+            bits.inst.yi = 31;
+            bits.inst.in = (int)(_y->dir().value());
+        }
+
+        if (_z->idx().valid()) {
+            bits.inst.zi = _z->idx().value();
+        } else if (_z->lit().valid()) {
+            bits.inst.zi = _z->lit().value();
+            fprintf(stderr, "Unable to generate Z literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_z->dir().valid()) {
+            fprintf(stderr, "Unable to generate Z network for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        return bits.bits;
+
+    case opcode::LDI:
+        if (_d->idx().valid()) {
+            bits.ldi.di = _d->idx().value();
+        } else if (_d->lit().valid()) {
+            fprintf(stderr, "Unable to generate D literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_d->dir().valid()) {
+            bits.ldi.di = 31;
+            bits.ldi.out = 1 << (int)(_d->dir().value());
+        }
+
+        if (_x->idx().valid()) {
+            fprintf(stderr, "Unable to generate X register for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_x->lit().valid()) {
+            bits.ldi.off = _x->lit().value();
+        } else if (_x->dir().valid()) {
+            fprintf(stderr, "Unable to generate X network for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        if (_y != NULL) {
+            fprintf(stderr, "Unable to generate any Y for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        if (_z != NULL) {
+            fprintf(stderr, "Unable to generate any Z for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        return bits.bits;
+
+    case opcode::STI:
+        if (_d != NULL) {
+            fprintf(stderr, "Unable to generate any D for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        if (_x->idx().valid()) {
+            bits.sti.xi = _x->idx().value();
+        } else if (_x->lit().valid()) {
+            fprintf(stderr, "Unable to generate X literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_x->dir().valid()) {
+            bits.sti.xi = 31;
+            bits.sti.in = (int)(_x->dir().value());
+        }
+
+        if (_y->idx().valid()) {
+            fprintf(stderr, "Unable to generate Y register for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_y->lit().valid()) {
+            bits.sti.off = _y->lit().value();
+        } else if (_y->dir().valid()) {
+            fprintf(stderr, "Unable to generate Y network for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        if (_z != NULL) {
+            fprintf(stderr, "Unable to generate any Z for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        return bits.bits;
+
+    case opcode::LD:
+        if (_d->idx().valid()) {
+            bits.ldi.di = _d->idx().value();
+        } else if (_d->lit().valid()) {
+            fprintf(stderr, "Unable to generate D literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_d->dir().valid()) {
+            bits.ldi.di = 31;
+            bits.ldi.out = 1 << (int)(_d->dir().value());
+        }
+
+        if (_x->idx().valid()) {
+            bits.inst.xi = _x->idx().value();
+        } else if (_x->lit().valid()) {
+            fprintf(stderr, "Unable to generate X literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_x->dir().valid()) {
+            bits.inst.xi = 31;
+            bits.inst.in = (int)(_x->dir().value());
+        }
+
+        if (_y->idx().valid()) {
+            bits.inst.iy = 0;
+            bits.inst.yi = _y->idx().value();
+        } else if (_y->lit().valid()) {
+            bits.inst.iy = 1;
+            bits.inst.yi = _y->lit().value();
+        } else if (_y->dir().valid()) {
+            bits.inst.iy = 0;
+            bits.inst.yi = 31;
+            bits.inst.in = (int)(_y->dir().value());
+        }
+
+        if (_z != NULL) {
+            fprintf(stderr, "Unable to generate any Z for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        return bits.bits;
+
+    case opcode::ST:
+        if (_d != NULL) {
+            fprintf(stderr, "Unable to generate any D for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        }
+
+        if (_x->idx().valid()) {
+            bits.inst.xi = _x->idx().value();
+        } else if (_x->lit().valid()) {
+            fprintf(stderr, "Unable to generate X literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_x->dir().valid()) {
+            bits.inst.xi = 31;
+            bits.inst.in = (int)(_x->dir().value());
+        }
+
+        if (_y->idx().valid()) {
+            bits.inst.iy = 0;
+            bits.inst.yi = _y->idx().value();
+        } else if (_y->lit().valid()) {
+            bits.inst.iy = 1;
+            bits.inst.yi = _y->lit().value();
+        } else if (_y->dir().valid()) {
+            bits.inst.iy = 0;
+            bits.inst.yi = 31;
+            bits.inst.in = (int)(_y->dir().value());
+        }
+
+        if (_z->idx().valid()) {
+            bits.inst.zi = _z->idx().value();
+        } else if (_z->lit().valid()) {
+            fprintf(stderr, "Unable to generate Z literal for %s\n",
+                    std::to_string(_opcode).c_str());
+            abort();
+        } else if (_z->dir().valid()) {
+            bits.inst.zi = 31;
+            bits.inst.in = (int)(_z->dir().value());
+        }
+
+        return bits.bits;
+
     case opcode::RST:
     case opcode::RND:
     case opcode::EAT:
