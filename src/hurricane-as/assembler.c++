@@ -56,6 +56,7 @@ hurricane_bfd::object::ptr assembler::read_as_file(FILE* file)
 
     /* Some lookup tables to use later when attempting to calculate
      * addresses. */
+    std::vector<std::pair<std::string, hurricane_as::label::offset::ptr>> bundle_offset_pairs;
     std::map<std::string, hurricane_as::label::ptr> name2label;
     std::map<hurricane_as::label::offset::ptr, std::string> offset2bundle;
     std::map<hurricane_as::label::offset::ptr, std::string> offset2section;
@@ -93,6 +94,7 @@ hurricane_bfd::object::ptr assembler::read_as_file(FILE* file)
             offset2bundle[offset] = line;
             offset2section[offset] = section;
             offset2label[offset] = label;
+            bundle_offset_pairs.push_back(std::make_pair(line, offset));
             offset = offset->increment();
         } else if (std::regex_match(line, std::regex("section .*"))) {
             section = std::string(line + strlen("section "));
@@ -130,15 +132,15 @@ hurricane_bfd::object::ptr assembler::read_as_file(FILE* file)
 
     /* Walk through every bundle and try to turn it into an actual
      * instruction. */
-    for (const auto& pair: offset2bundle) {
-        auto offset = pair.first;
+    for (const auto& pair: bundle_offset_pairs) {
+        auto offset = pair.second;
 
         /* Split this bundle up into individual instructions. */
         auto i_strings = [&]()
             {
-                auto b_string = std::string(pair.second,
+                auto b_string = std::string(pair.first,
                                             2,
-                                            strlen(pair.second.c_str()) - 4
+                                            strlen(pair.first.c_str()) - 4
                     );
 
 
