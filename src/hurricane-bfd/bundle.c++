@@ -94,7 +94,7 @@ std::string bundle::hex_string(void) const
         bits |= instruction->bits();
 
     char buffer[BUFFER_SIZE];
-    snprintf(buffer, BUFFER_SIZE, "0x%x", bits);
+    snprintf(buffer, BUFFER_SIZE, "0x%.8x", bits);
     return buffer;
 }
 
