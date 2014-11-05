@@ -77,8 +77,8 @@ void object::write_hex_file(FILE *file)
             {
                 fprintf(file, "%s", b->hex_string().c_str());
                 if (b->has_debug())
-                    printf(" %s", b->debug().c_str());
-                printf("\n");
+                    fprintf(file, " %s", b->debug().c_str());
+                fprintf(file, "\n");
             };
 
         for (const auto& lo: tile->lo())
