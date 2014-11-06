@@ -65,6 +65,9 @@ namespace hurricane_bfd {
             : _idx(idx)
             {  }
 
+        unsigned int idx(void) const
+            { return _idx; }
+
         std::string to_string(void) const
             { return std::string("x") + std::to_string(_idx); }
 
@@ -87,6 +90,9 @@ namespace hurricane_bfd {
         operand_net(enum direction dir)
             : _dir(dir)
             {  }
+
+        enum direction dir(void) const
+            { return _dir; }
 
         std::string to_string(void) const
             { return std::to_string(_dir); }
